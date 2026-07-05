@@ -3,230 +3,256 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>Yönetim Paneli — SürüngenMarket</title>
 <style>
   :root {
-    --bg: #0c0c0e; --bg-2: #141417; --bg-3: #1c1c21;
-    --border: #26262c; --border-2: #35353d;
-    --text: #f2f2f4; --muted: #9a9aa3;
-    --accent: #ffffff; --accent-2: #ffffff;
-    --red: #ff6b6b; --amber: #f0b25a; --blue: #5aa8e8;
+    --bg:#0c0c0e; --bg-2:#141417; --bg-3:#1c1c21; --border:#26262c; --border-2:#35353d;
+    --text:#f2f2f4; --muted:#9a9aa3; --red:#ff6b6b; --amber:#f0b25a; --green:#26c592;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
-
-  aside { width: 230px; background: var(--bg-2); border-right: 1px solid var(--border); padding: 20px 14px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; }
-  .logo { font-size: 17px; font-weight: 800; padding: 4px 10px 18px; }
-  .logo span { color: var(--accent-2); }
-  .logo small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 2px; }
-  aside a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; margin-bottom: 2px; transition: all .15s; }
-  aside a:hover { background: var(--bg-3); color: #fff; }
-  aside a.active { background: rgba(255,255,255,.08); color: #fff; }
-  aside a .n { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
-
-  main { flex: 1; padding: 28px 32px; max-width: 1100px; }
-  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; }
-
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 30px; }
-  .stat { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: transform .2s, border-color .2s; }
-  .stat:hover { transform: translateY(-3px); border-color: var(--border-2); }
-  .stat .l { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
-  .stat .v { font-size: 26px; font-weight: 700; }
-  .stat .d { font-size: 12px; margin-top: 4px; }
-  .up { color: #c9c9ce; } .warn { color: var(--amber); } .down { color: var(--red); }
-
-  h2 { font-size: 16px; font-weight: 700; margin: 26px 0 14px; }
-  .panel { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th { text-align: left; padding: 12px 16px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); font-weight: 600; }
-  td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr { transition: background .15s; }
-  tbody tr:hover { background: var(--bg-3); }
-  .thumb { width: 52px; height: 40px; border-radius: 7px; object-fit: cover; }
-  .who { font-size: 12px; color: var(--muted); }
-  .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
-  .tag.bekliyor { background: rgba(240,178,90,.14); color: var(--amber); }
-  .tag.riskli { background: rgba(255,107,107,.14); color: var(--red); }
-  .tag.satis { background: rgba(255,255,255,.07); color: #c9c9ce; }
-  .tag.sahiplendirme { background: rgba(255,255,255,.1); color: #fff; }
-  .btn { padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s, transform .1s; }
-  .btn:hover { opacity: .85; } .btn:active { transform: scale(.96); }
-  .ok { background: #fff; color: #0c0c0e; }
-  .no { background: transparent; color: var(--red); border: 1px solid rgba(255,107,107,.4); margin-left: 6px; }
-  .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 14px; }
-  .row-out { animation: out .35s ease forwards; }
-  @keyframes out { to { opacity: 0; transform: translateX(24px); } }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-3); border: 1px solid var(--border-2); border-left: 3px solid #fff; padding: 12px 18px; border-radius: 10px; font-size: 13.5px; display: none; animation: pop .25s ease; }
-  @keyframes pop { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (max-width: 800px) { aside { display: none; } main { padding: 20px 16px; } }
-
-  /* Giriş kapısı */
-  #gate { position: fixed; inset: 0; z-index: 999; background: var(--bg); display: flex; align-items: center; justify-content: center; }
-  .gate-box { width: 100%; max-width: 360px; background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 16px; padding: 32px 28px; text-align: center; }
-  .gate-box .glogo { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
-  .gate-box .glogo span { color: #fff; }
-  .gate-box p { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
-  .gate-box input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border-2); background: var(--bg); color: #fff; font-size: 15px; outline: none; text-align: center; letter-spacing: 2px; }
-  .gate-box input:focus { border-color: #fff; }
-  .gate-box button { width: 100%; margin-top: 12px; padding: 12px; border-radius: 10px; border: none; background: #fff; color: #0c0c0e; font-size: 15px; font-weight: 700; cursor: pointer; }
-  .gate-box .gerr { color: var(--red); font-size: 13px; margin-top: 12px; min-height: 18px; }
-  body.locked { overflow: hidden; }
-  body.locked aside, body.locked main, body.locked .toast { display: none !important; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  a { color:inherit; }
+  .layout { display:flex; min-height:100vh; }
+  aside { width:230px; background:var(--bg-2); border-right:1px solid var(--border); padding:20px 14px; flex-shrink:0; }
+  .logo { font-size:17px; font-weight:800; padding:4px 10px 4px; }
+  .logo span { color:#fff; } .logo small { display:block; font-size:11px; color:var(--muted); font-weight:500; margin-top:2px; }
+  aside nav { margin-top:14px; }
+  aside a.navitem { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; margin-bottom:2px; cursor:pointer; transition:all .15s; }
+  aside a.navitem:hover { background:var(--bg-3); color:#fff; }
+  aside a.navitem .n { margin-left:auto; background:var(--red); color:#fff; font-size:11px; font-weight:700; padding:1px 7px; border-radius:99px; }
+  main { flex:1; padding:28px 32px; max-width:1150px; }
+  h1 { font-size:22px; font-weight:700; margin-bottom:4px; }
+  .sub { color:var(--muted); font-size:13.5px; margin-bottom:24px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:30px; }
+  .stat { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .stat .l { font-size:12.5px; color:var(--muted); margin-bottom:6px; }
+  .stat .v { font-size:26px; font-weight:700; }
+  h2 { font-size:16px; font-weight:700; margin:26px 0 14px; }
+  .panel { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { text-align:left; padding:12px 16px; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); font-weight:600; }
+  td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--bg-3); }
+  .thumb { width:52px; height:40px; border-radius:7px; object-fit:cover; background:var(--bg-3); }
+  .who { font-size:12px; color:var(--muted); }
+  .tag { font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap; }
+  .tag.bekliyor { background:rgba(240,178,90,.14); color:var(--amber); }
+  .tag.satis { background:rgba(255,255,255,.07); color:#c9c9ce; }
+  .tag.sahiplendirme { background:rgba(255,255,255,.12); color:#fff; }
+  .btn { padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; border:none; transition:opacity .15s, transform .1s; }
+  .btn:hover { opacity:.85; } .btn:active { transform:scale(.96); }
+  .ok { background:#fff; color:#0c0c0e; }
+  .no { background:transparent; color:var(--red); border:1px solid rgba(255,107,107,.4); margin-left:6px; }
+  .empty { padding:26px 16px; text-align:center; color:var(--muted); font-size:14px; }
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-3); border:1px solid var(--border-2); border-left:3px solid var(--green); padding:12px 18px; border-radius:10px; font-size:13.5px; display:none; z-index:50; }
+  /* giriş kapısı */
+  #gate { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; z-index:100; }
+  .gate-box { width:100%; max-width:380px; background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; padding:32px 28px; text-align:center; }
+  .gate-box .glogo { font-size:20px; font-weight:800; margin-bottom:2px; } .gate-box .glogo span { color:#fff; }
+  .gate-box p { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .gate-box input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border-2); background:var(--bg); color:#fff; font-size:15px; outline:none; margin-bottom:10px; }
+  .gate-box button { width:100%; padding:12px; border-radius:10px; border:none; background:#fff; color:#0c0c0e; font-weight:700; font-size:15px; cursor:pointer; }
+  .gate-box .gerr { color:var(--red); font-size:13px; margin-top:12px; min-height:18px; }
+  .hidden { display:none !important; }
+  @media (max-width:820px){ aside{display:none;} main{padding:20px 16px;} }
 </style>
 </head>
-<body class="locked">
+<body>
 
 <div id="gate">
   <div class="gate-box">
     <div class="glogo">Sürüngen<span>Market</span></div>
-    <p>Yönetim paneli — giriş şifresi gerekli</p>
-    <input id="gpass" type="password" placeholder="Şifre" autofocus onkeydown="if(event.key==='Enter') tryLogin()">
-    <button onclick="tryLogin()">Giriş yap</button>
+    <p id="gate-sub">Yönetim paneli — admin girişi</p>
+    <div id="gate-form">
+      <input id="g-email" type="email" placeholder="E-posta">
+      <input id="g-pass" type="password" placeholder="Şifre">
+      <button id="g-login">Giriş yap</button>
+    </div>
     <div class="gerr" id="gerr"></div>
   </div>
 </div>
 
-<aside>
-  <div class="logo">Sürüngen<span>Market</span><small>Yönetim paneli</small></div>
-  <a href="#" class="active">📊 Genel bakış</a>
-  <a href="#onay">📥 İlan onayları <span class="n" id="pending-n">4</span></a>
-  <a href="#">👥 Kullanıcılar</a>
-  <a href="#sikayet">🚩 Şikayetler <span class="n">2</span></a>
-  <a href="#">💬 Mesaj denetimi</a>
-  <a href="#">🚫 Yasaklı türler listesi</a>
-  <a href="#">⚙️ Ayarlar</a>
-</aside>
+<div class="layout hidden" id="panel">
+  <aside>
+    <div class="logo">Sürüngen<span>Market</span><small>Yönetim paneli</small></div>
+    <nav>
+      <a class="navitem" id="nav-user" style="pointer-events:none">👤 <span id="me-name"></span></a>
+      <a class="navitem" data-sec="overview">📊 Genel bakış</a>
+      <a class="navitem" data-sec="pending">📥 İlan onayları <span class="n hidden" id="pn"></span></a>
+      <a class="navitem" data-sec="reports">🚩 Şikayetler <span class="n hidden" id="rn"></span></a>
+      <a class="navitem" data-sec="users">👥 Kullanıcılar</a>
+      <a class="navitem" href="index.html">↩ Siteye dön</a>
+      <a class="navitem" id="logout">🚪 Çıkış</a>
+    </nav>
+  </aside>
 
-<main>
-  <h1>Genel bakış</h1>
-  <p class="sub">Hoş geldin furk4n · Son giriş: bugün 14:32</p>
+  <main>
+    <h1 id="sec-title">Genel bakış</h1>
+    <p class="sub" id="sec-sub">Hoş geldin</p>
 
-  <div class="stats">
-    <div class="stat"><div class="l">Yayındaki ilan</div><div class="v">412</div><div class="d up">▲ 23 bu hafta</div></div>
-    <div class="stat"><div class="l">Onay bekleyen</div><div class="v" id="stat-pending">4</div><div class="d warn">İşlem gerekli</div></div>
-    <div class="stat"><div class="l">Kayıtlı kullanıcı</div><div class="v">1.847</div><div class="d up">▲ 96 bu hafta</div></div>
-    <div class="stat"><div class="l">Açık şikayet</div><div class="v">2</div><div class="d down">İncele</div></div>
-  </div>
+    <div id="stats-wrap" class="stats"></div>
 
-  <h2 id="onay">Onay bekleyen ilanlar</h2>
-  <div class="panel">
-    <table>
-      <thead><tr><th></th><th>İlan</th><th>Tip</th><th>Cinsiyet / yaş</th><th>Fiyat</th><th>Durum</th><th></th></tr></thead>
-      <tbody id="queue">
-        <tr>
-          <td><img class="thumb" src="https://loremflickr.com/160/120/leopardgecko?lock=41" alt=""></td>
-          <td>Leopar gecko — Mack Snow<div class="who">GeckoTR_Uretim · İstanbul · 14:02</div></td>
-          <td><span class="tag satis">Satılık</span></td>
-          <td>♀ '25</td>
-          <td>2.800 ₺</td>
-          <td><span class="tag bekliyor">Bekliyor</span></td>
-          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
-        </tr>
-        <tr>
-          <td><img class="thumb" src="https://loremflickr.com/160/120/tortoise?lock=42" alt=""></td>
-          <td>Yunan kaplumbağası<div class="who">yeni_uye_34 · Ankara · 13:40</div></td>
-          <td><span class="tag satis">Satılık</span></td>
-          <td>♂ '20</td>
-          <td>1.500 ₺</td>
-          <td><span class="tag riskli">⚠ Yasaklı tür şüphesi</span></td>
-          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
-        </tr>
-        <tr>
-          <td><img class="thumb" src="https://loremflickr.com/160/120/ballpython?lock=43" alt=""></td>
-          <td>Top piton — Spider<div class="who">AnkaraPython · Ankara · 12:15</div></td>
-          <td><span class="tag satis">Satılık</span></td>
-          <td>♂ '24</td>
-          <td>7.200 ₺</td>
-          <td><span class="tag bekliyor">Bekliyor</span></td>
-          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
-        </tr>
-        <tr>
-          <td><img class="thumb" src="https://loremflickr.com/160/120/hedgehog?lock=44" alt=""></td>
-          <td>Pigme kirpi<div class="who">MiniPets · İzmir · 10:48</div></td>
-          <td><span class="tag sahiplendirme">Sahiplendirme</span></td>
-          <td>♀ 8 aylık</td>
-          <td>Ücretsiz</td>
-          <td><span class="tag bekliyor">Bekliyor</span></td>
-          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="empty" id="empty" style="display:none">Bekleyen ilan kalmadı 🎉</div>
-  </div>
-
-  <h2 id="sikayet">Açık şikayetler</h2>
-  <div class="panel">
-    <table>
-      <thead><tr><th>İlan</th><th>Şikayet eden</th><th>Sebep</th><th>Tarih</th><th></th></tr></thead>
-      <tbody>
-        <tr><td>Sugar glider çifti</td><td>kullanici_92</td><td>"Ücretsiz yazıyor ama para istiyor"</td><td>dün</td><td><button class="btn ok">İncele</button></td></tr>
-        <tr><td>Mısır yılanı</td><td>terra_fan</td><td>"Fotoğraflar başka siteden alınmış"</td><td>2 gün önce</td><td><button class="btn ok">İncele</button></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h2>Son kayıt olan kullanıcılar</h2>
-  <div class="panel">
-    <table>
-      <thead><tr><th>Kullanıcı</th><th>E-posta</th><th>Şehir</th><th>Kayıt</th><th>İlan</th></tr></thead>
-      <tbody>
-        <tr><td>terra_fan</td><td>t***@gmail.com</td><td>İstanbul</td><td>bugün</td><td>0</td></tr>
-        <tr><td>yeni_uye_34</td><td>y***@hotmail.com</td><td>Ankara</td><td>bugün</td><td>1</td></tr>
-        <tr><td>gecko_sever</td><td>g***@gmail.com</td><td>Bursa</td><td>dün</td><td>0</td></tr>
-      </tbody>
-    </table>
-  </div>
-</main>
+    <div id="section"></div>
+  </main>
+</div>
 
 <div class="toast" id="toast"></div>
 
-<script>
-/* ============================================================
-   YÖNETİM PANELİ GİRİŞ ŞİFRESİ
-   Şifreyi değiştirmek için aşağıdaki tırnak içini düzenle:
-   ============================================================ */
-const ADMIN_SIFRE = "surungen2026";
+<script type="module">
+import { supabase, publicImage } from "./js/supabase.js";
 
-/* Oturum: doğru şifre girilince tarayıcı sekmesi boyunca hatırlanır */
-if (sessionStorage.getItem("sm_admin_ok") === "1") unlock();
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const tl = n => Number(n).toLocaleString("tr-TR") + " ₺";
+const timeStr = iso => new Date(iso).toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+function toast(m){ const t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none",2600); }
 
-function tryLogin() {
-  const val = document.getElementById("gpass").value;
-  if (val === ADMIN_SIFRE) {
-    sessionStorage.setItem("sm_admin_ok", "1");
-    unlock();
-  } else {
-    document.getElementById("gerr").textContent = "Şifre hatalı, tekrar dene.";
-    document.getElementById("gpass").value = "";
-    document.getElementById("gpass").focus();
-  }
+let me = null;
+
+// ---- erişim kontrolü ----
+init();
+async function init(){
+  const { data:{ user } } = await supabase.auth.getUser();
+  if(!user){ showGate("Yönetim paneli — admin girişi"); return; }
+  const { data:prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if(!prof || prof.role !== "admin"){ showGate("Bu hesabın yönetici yetkisi yok.", true); return; }
+  me = prof;
+  unlock();
 }
-function unlock() {
-  document.body.classList.remove("locked");
-  const g = document.getElementById("gate");
-  if (g) g.remove();
+function showGate(msg, loggedIn){
+  $("gate").classList.remove("hidden");
+  $("panel").classList.add("hidden");
+  $("gate-sub").textContent = msg;
+  $("gate-form").style.display = loggedIn ? "none" : "";
+  if(loggedIn){ $("gerr").textContent = "Yönetici olmayan bir hesapla giriş yaptın. Doğru hesapla gir."; }
+}
+async function unlock(){
+  $("gate").classList.add("hidden");
+  $("panel").classList.remove("hidden");
+  $("me-name").textContent = me.username;
+  $("sec-sub").textContent = "Hoş geldin " + me.username;
+  await loadStats();
+  showSection("pending");
 }
 
-function done(row, msg) {
-  row.classList.add("row-out");
-  setTimeout(() => {
-    row.remove();
-    const left = document.querySelectorAll("#queue tr").length;
-    document.getElementById("pending-n").textContent = left;
-    document.getElementById("stat-pending").textContent = left;
-    if (!left) document.getElementById("empty").style.display = "block";
-  }, 350);
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.style.display = "block";
-  clearTimeout(t._h);
-  t._h = setTimeout(() => t.style.display = "none", 2500);
+$("g-login").onclick = doLogin;
+$("g-pass").addEventListener("keydown", e => e.key === "Enter" && doLogin());
+async function doLogin(){
+  const email = $("g-email").value.trim().toLowerCase();
+  const password = $("g-pass").value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error){ $("gerr").textContent = "E-posta veya şifre hatalı."; return; }
+  init();
 }
-function approve(btn) { done(btn.closest("tr"), "İlan onaylandı ve yayına alındı ✓"); }
-function reject(btn) { done(btn.closest("tr"), "İlan reddedildi, kullanıcıya bildirim gönderildi"); }
+$("logout").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
+
+// ---- istatistikler ----
+async function loadStats(){
+  const [pending, active, users, reports] = await Promise.all([
+    supabase.from("listings").select("id", { count:"exact", head:true }).eq("status","pending"),
+    supabase.from("listings").select("id", { count:"exact", head:true }).eq("status","active"),
+    supabase.from("profiles").select("id", { count:"exact", head:true }),
+    supabase.from("reports").select("id", { count:"exact", head:true }).eq("status","open"),
+  ]);
+  $("stats-wrap").innerHTML = `
+    <div class="stat"><div class="l">Yayındaki ilan</div><div class="v">${active.count ?? 0}</div></div>
+    <div class="stat"><div class="l">Onay bekleyen</div><div class="v">${pending.count ?? 0}</div></div>
+    <div class="stat"><div class="l">Kayıtlı kullanıcı</div><div class="v">${users.count ?? 0}</div></div>
+    <div class="stat"><div class="l">Açık şikayet</div><div class="v">${reports.count ?? 0}</div></div>`;
+  setBadge("pn", pending.count); setBadge("rn", reports.count);
+}
+function setBadge(id, n){ const el=$(id); if(n){ el.textContent=n; el.classList.remove("hidden"); } else el.classList.add("hidden"); }
+
+// ---- bölümler ----
+document.querySelectorAll("[data-sec]").forEach(a => a.onclick = () => showSection(a.dataset.sec));
+function showSection(sec){
+  const titles = { overview:"Genel bakış", pending:"İlan onayları", reports:"Şikayetler", users:"Kullanıcılar" };
+  $("sec-title").textContent = titles[sec] || "";
+  $("stats-wrap").style.display = sec === "overview" || sec === "pending" ? "grid" : "none";
+  if(sec === "overview" || sec === "pending") loadPending();
+  else if(sec === "reports") loadReports();
+  else if(sec === "users") loadUsers();
+}
+
+// ---- onay bekleyen ilanlar ----
+async function loadPending(){
+  const { data, error } = await supabase.from("listings")
+    .select("id,title,price,sex,age_text,city,created_at,seller:profiles!listings_user_id_fkey(username),images:listing_images(storage_path,position)")
+    .eq("status","pending").order("created_at",{ ascending:true });
+  if(error){ $("section").innerHTML = `<div class="empty">Yüklenemedi: ${esc(error.message)}</div>`; return; }
+  if(!data.length){ $("section").innerHTML = `<div class="panel"><div class="empty">Onay bekleyen ilan yok 🎉</div></div>`; return; }
+  $("section").innerHTML = `<h2>Onay bekleyen ilanlar (${data.length})</h2><div class="panel"><table>
+    <thead><tr><th></th><th>İlan</th><th>Tip</th><th>Cins/Yaş</th><th>Fiyat</th><th></th></tr></thead>
+    <tbody>${data.map(l => {
+      const img = (l.images||[]).sort((a,b)=>a.position-b.position)[0];
+      const cover = img ? `<img class="thumb" src="${publicImage(img.storage_path)}">` : `<div class="thumb"></div>`;
+      const free = l.price === 0;
+      const sx = l.sex==="m"?"♂":l.sex==="f"?"♀":"—";
+      return `<tr data-id="${l.id}">
+        <td>${cover}</td>
+        <td>${esc(l.title)}<div class="who">${esc(l.seller?.username||"")} · ${esc(l.city||"")} · ${timeStr(l.created_at)}</div></td>
+        <td><span class="tag ${free?"sahiplendirme":"satis"}">${free?"Sahiplendirme":"Satılık"}</span></td>
+        <td>${sx} ${esc(l.age_text||"")}</td>
+        <td>${free?"Ücretsiz":tl(l.price)}</td>
+        <td style="white-space:nowrap"><button class="btn ok" data-a="approve">Onayla</button><button class="btn no" data-a="reject">Reddet</button></td>
+      </tr>`;
+    }).join("")}</tbody></table></div>`;
+  $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => moderate(b.closest("tr").dataset.id, b.dataset.a, b));
+}
+async function moderate(id, action, btn){
+  const status = action === "approve" ? "active" : "removed";
+  btn.disabled = true;
+  const { error } = await supabase.from("listings").update({ status }).eq("id", id);
+  if(error){ toast("İşlem başarısız: " + error.message); btn.disabled=false; return; }
+  const tr = btn.closest("tr"); tr.style.transition="opacity .3s"; tr.style.opacity="0";
+  setTimeout(async () => { tr.remove(); await loadStats();
+    if(!$("section").querySelector("tbody tr")) loadPending();
+  }, 300);
+  toast(action === "approve" ? "İlan onaylandı ve yayına alındı ✓" : "İlan reddedildi");
+}
+
+// ---- şikayetler ----
+async function loadReports(){
+  const { data, error } = await supabase.from("reports")
+    .select("id,reason,detail,status,created_at,listing:listings(title),reporter:profiles!reports_reporter_id_fkey(username)")
+    .eq("status","open").order("created_at",{ ascending:false });
+  if(error){ $("section").innerHTML = `<div class="empty">Yüklenemedi: ${esc(error.message)}</div>`; return; }
+  if(!data.length){ $("section").innerHTML = `<div class="panel"><div class="empty">Açık şikayet yok.</div></div>`; return; }
+  $("section").innerHTML = `<h2>Açık şikayetler (${data.length})</h2><div class="panel"><table>
+    <thead><tr><th>İlan</th><th>Şikayet eden</th><th>Sebep</th><th>Tarih</th><th></th></tr></thead>
+    <tbody>${data.map(r => `<tr data-id="${r.id}">
+      <td>${esc(r.listing?.title||"—")}</td>
+      <td>${esc(r.reporter?.username||"—")}</td>
+      <td>${esc(r.reason)}${r.detail?`<div class="who">${esc(r.detail)}</div>`:""}</td>
+      <td>${timeStr(r.created_at)}</td>
+      <td style="white-space:nowrap"><button class="btn ok" data-a="resolve">Çözüldü</button><button class="btn no" data-a="dismiss">Yoksay</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+  $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => resolveReport(b.closest("tr").dataset.id, b.dataset.a, b));
+}
+async function resolveReport(id, action, btn){
+  btn.disabled = true;
+  const { error } = await supabase.from("reports").update({ status: action === "resolve" ? "resolved" : "dismissed" }).eq("id", id);
+  if(error){ toast("İşlem başarısız"); btn.disabled=false; return; }
+  const tr = btn.closest("tr"); tr.remove(); await loadStats();
+  if(!$("section").querySelector("tbody tr")) loadReports();
+  toast("Şikayet güncellendi");
+}
+
+// ---- kullanıcılar ----
+async function loadUsers(){
+  const { data, error } = await supabase.from("profiles")
+    .select("id,username,city,role,created_at").order("created_at",{ ascending:false }).limit(200);
+  if(error){ $("section").innerHTML = `<div class="empty">Yüklenemedi: ${esc(error.message)}</div>`; return; }
+  $("section").innerHTML = `<h2>Kullanıcılar (${data.length})</h2><div class="panel"><table>
+    <thead><tr><th>Kullanıcı</th><th>Şehir</th><th>Rol</th><th>Kayıt</th></tr></thead>
+    <tbody>${data.map(u => `<tr>
+      <td>${esc(u.username)}</td><td>${esc(u.city||"—")}</td>
+      <td>${u.role==="admin"?'<span class="tag sahiplendirme">admin</span>':"üye"}</td>
+      <td>${timeStr(u.created_at)}</td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
 </script>
-
 </body>
 </html>
