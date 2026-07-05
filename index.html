@@ -2027,4 +2027,24 @@ function addReview(s) {
   const txt = document.getElementById("rv-text").value.trim();
   const stars = parseInt(document.getElementById("rv-stars").value);
   if (!txt) { showToast("Yorum metni boş olamaz"); return; }
-  const all = stor
+  const all = store.get("sm_reviews", {});
+  (all[s] = all[s] || []).push({ by: user.name, s: stars, t: txt, d: "Temmuz 2026" });
+  store.set("sm_reviews", all);
+  showToast("Yorumun yayınlandı ★");
+  openSellerProfile(s);
+}
+
+function searchSeller(s) {
+  goHome();
+  document.getElementById("q").value = s;
+  render();
+  setTimeout(() => document.getElementById("ilanlar").scrollIntoView({ behavior: "smooth" }), 100);
+}
+
+/* ---------- Başlat ---------- */
+render();
+updateAuthUI();
+</script>
+
+</body>
+</html>
