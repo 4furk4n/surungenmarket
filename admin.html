@@ -61,9 +61,32 @@
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-3); border: 1px solid var(--border-2); border-left: 3px solid #fff; padding: 12px 18px; border-radius: 10px; font-size: 13.5px; display: none; animation: pop .25s ease; }
   @keyframes pop { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (max-width: 800px) { aside { display: none; } main { padding: 20px 16px; } }
+
+  /* Giriş kapısı */
+  #gate { position: fixed; inset: 0; z-index: 999; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+  .gate-box { width: 100%; max-width: 360px; background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 16px; padding: 32px 28px; text-align: center; }
+  .gate-box .glogo { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .gate-box .glogo span { color: #fff; }
+  .gate-box p { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .gate-box input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border-2); background: var(--bg); color: #fff; font-size: 15px; outline: none; text-align: center; letter-spacing: 2px; }
+  .gate-box input:focus { border-color: #fff; }
+  .gate-box button { width: 100%; margin-top: 12px; padding: 12px; border-radius: 10px; border: none; background: #fff; color: #0c0c0e; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .gate-box .gerr { color: var(--red); font-size: 13px; margin-top: 12px; min-height: 18px; }
+  body.locked { overflow: hidden; }
+  body.locked aside, body.locked main, body.locked .toast { display: none !important; }
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="glogo">Sürüngen<span>Market</span></div>
+    <p>Yönetim paneli — giriş şifresi gerekli</p>
+    <input id="gpass" type="password" placeholder="Şifre" autofocus onkeydown="if(event.key==='Enter') tryLogin()">
+    <button onclick="tryLogin()">Giriş yap</button>
+    <div class="gerr" id="gerr"></div>
+  </div>
+</div>
 
 <aside>
   <div class="logo">Sürüngen<span>Market</span><small>Yönetim paneli</small></div>
@@ -160,6 +183,32 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ============================================================
+   YÖNETİM PANELİ GİRİŞ ŞİFRESİ
+   Şifreyi değiştirmek için aşağıdaki tırnak içini düzenle:
+   ============================================================ */
+const ADMIN_SIFRE = "surungen2026";
+
+/* Oturum: doğru şifre girilince tarayıcı sekmesi boyunca hatırlanır */
+if (sessionStorage.getItem("sm_admin_ok") === "1") unlock();
+
+function tryLogin() {
+  const val = document.getElementById("gpass").value;
+  if (val === ADMIN_SIFRE) {
+    sessionStorage.setItem("sm_admin_ok", "1");
+    unlock();
+  } else {
+    document.getElementById("gerr").textContent = "Şifre hatalı, tekrar dene.";
+    document.getElementById("gpass").value = "";
+    document.getElementById("gpass").focus();
+  }
+}
+function unlock() {
+  document.body.classList.remove("locked");
+  const g = document.getElementById("gate");
+  if (g) g.remove();
+}
+
 function done(row, msg) {
   row.classList.add("row-out");
   setTimeout(() => {
