@@ -8,55 +8,75 @@
 <style>
   :root {
     --bg:#0c0c0e; --bg-2:#141417; --bg-3:#1c1c21; --border:#26262c; --border-2:#35353d;
-    --text:#f2f2f4; --muted:#9a9aa3; --red:#ff6b6b; --amber:#f0b25a; --green:#26c592;
+    --text:#f2f2f4; --muted:#9a9aa3; --red:#ff6b6b; --amber:#f0b25a; --green:#26c592; --blue:#5aa8e8;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); }
-  a { color:inherit; }
   .layout { display:flex; min-height:100vh; }
-  aside { width:230px; background:var(--bg-2); border-right:1px solid var(--border); padding:20px 14px; flex-shrink:0; }
-  .logo { font-size:17px; font-weight:800; padding:4px 10px 4px; }
+  aside { width:236px; background:var(--bg-2); border-right:1px solid var(--border); padding:22px 14px; flex-shrink:0; position:sticky; top:0; height:100vh; }
+  .logo { font-size:17px; font-weight:800; padding:4px 10px 2px; }
   .logo span { color:#fff; } .logo small { display:block; font-size:11px; color:var(--muted); font-weight:500; margin-top:2px; }
-  aside nav { margin-top:14px; }
-  aside a.navitem { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; margin-bottom:2px; cursor:pointer; transition:all .15s; }
-  aside a.navitem:hover { background:var(--bg-3); color:#fff; }
-  aside a.navitem .n { margin-left:auto; background:var(--red); color:#fff; font-size:11px; font-weight:700; padding:1px 7px; border-radius:99px; }
-  main { flex:1; padding:28px 32px; max-width:1150px; }
-  h1 { font-size:22px; font-weight:700; margin-bottom:4px; }
-  .sub { color:var(--muted); font-size:13.5px; margin-bottom:24px; }
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:30px; }
-  .stat { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
-  .stat .l { font-size:12.5px; color:var(--muted); margin-bottom:6px; }
-  .stat .v { font-size:26px; font-weight:700; }
-  h2 { font-size:16px; font-weight:700; margin:26px 0 14px; }
-  .panel { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  aside nav { margin-top:18px; display:flex; flex-direction:column; gap:2px; }
+  .navitem { display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; cursor:pointer; transition:all .15s; }
+  .navitem:hover { background:var(--bg-3); color:#fff; }
+  .navitem.active { background:rgba(255,255,255,.09); color:#fff; }
+  .navitem .n { margin-left:auto; background:var(--red); color:#fff; font-size:11px; font-weight:700; padding:1px 7px; border-radius:99px; }
+  .navsep { height:1px; background:var(--border); margin:10px 6px; }
+  main { flex:1; padding:30px 36px; max-width:1200px; }
+  h1 { font-size:23px; font-weight:800; letter-spacing:-.3px; margin-bottom:4px; }
+  .sub { color:var(--muted); font-size:13.5px; margin-bottom:26px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:30px; }
+  .stat { background:var(--bg-2); border:1px solid var(--border); border-radius:14px; padding:18px 20px; position:relative; overflow:hidden; }
+  .stat::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent,#fff); }
+  .stat.a::before { background:#fff; } .stat.b::before { background:var(--amber); } .stat.c::before { background:var(--blue); } .stat.d::before { background:var(--red); }
+  .stat .l { font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .stat .v { font-size:28px; font-weight:800; letter-spacing:-.5px; }
+  .sec-head { display:flex; align-items:center; justify-content:space-between; margin:26px 0 14px; }
+  .sec-head h2 { font-size:17px; font-weight:700; }
+  .sec-head .cnt { font-size:13px; color:var(--muted); }
+  .panel { background:var(--bg-2); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
   table { width:100%; border-collapse:collapse; font-size:13.5px; }
-  th { text-align:left; padding:12px 16px; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); font-weight:600; }
+  th { text-align:left; padding:13px 16px; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); font-weight:600; }
   td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
-  tbody tr:hover { background:var(--bg-3); }
-  .thumb { width:52px; height:40px; border-radius:7px; object-fit:cover; background:var(--bg-3); }
-  .who { font-size:12px; color:var(--muted); }
+  tbody tr { transition:background .15s; } tbody tr:hover { background:var(--bg-3); }
+  .thumb { width:54px; height:42px; border-radius:8px; object-fit:cover; background:var(--bg-3); }
+  .who { font-size:12px; color:var(--muted); margin-top:2px; }
   .tag { font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap; }
   .tag.bekliyor { background:rgba(240,178,90,.14); color:var(--amber); }
-  .tag.satis { background:rgba(255,255,255,.07); color:#c9c9ce; }
-  .tag.sahiplendirme { background:rgba(255,255,255,.12); color:#fff; }
-  .btn { padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; border:none; transition:opacity .15s, transform .1s; }
+  .tag.aktif { background:rgba(38,197,146,.14); color:var(--green); }
+  .tag.satis { background:rgba(90,168,232,.14); color:var(--blue); }
+  .tag.sahiplendirme { background:rgba(255,255,255,.1); color:#fff; }
+  .btn { padding:7px 13px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; border:none; transition:opacity .15s, transform .1s; }
   .btn:hover { opacity:.85; } .btn:active { transform:scale(.96); }
   .ok { background:#fff; color:#0c0c0e; }
+  .ghost { background:transparent; color:#fff; border:1px solid var(--border-2); margin-left:6px; }
   .no { background:transparent; color:var(--red); border:1px solid rgba(255,107,107,.4); margin-left:6px; }
-  .empty { padding:26px 16px; text-align:center; color:var(--muted); font-size:14px; }
-  .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-3); border:1px solid var(--border-2); border-left:3px solid var(--green); padding:12px 18px; border-radius:10px; font-size:13.5px; display:none; z-index:50; }
+  .empty { padding:28px 16px; text-align:center; color:var(--muted); font-size:14px; }
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-3); border:1px solid var(--border-2); border-left:3px solid var(--green); padding:12px 18px; border-radius:10px; font-size:13.5px; display:none; z-index:60; }
+  /* modal */
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.72); display:none; align-items:flex-start; justify-content:center; z-index:120; padding:40px 16px; overflow-y:auto; }
+  .overlay.open { display:flex; }
+  .modal { background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; width:100%; max-width:520px; padding:26px 26px 22px; }
+  .modal h2 { font-size:19px; font-weight:700; margin-bottom:16px; }
+  .fgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .field { display:flex; flex-direction:column; gap:6px; }
+  .field.full { grid-column:1/-1; }
+  .field label { font-size:12.5px; font-weight:600; color:var(--muted); }
+  .field input, .field select, .field textarea { padding:10px 12px; border:1px solid var(--border-2); border-radius:9px; background:var(--bg); color:#fff; font-size:14px; outline:none; font-family:inherit; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color:#fff; }
+  .mactions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+  .cancel { background:var(--bg-3); color:var(--text); }
   /* giriş kapısı */
-  #gate { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; z-index:100; }
-  .gate-box { width:100%; max-width:380px; background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; padding:32px 28px; text-align:center; }
-  .gate-box .glogo { font-size:20px; font-weight:800; margin-bottom:2px; } .gate-box .glogo span { color:#fff; }
-  .gate-box p { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  #gate { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; z-index:200; }
+  .gate-box { width:100%; max-width:380px; background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; padding:34px 28px; text-align:center; }
+  .gate-box .glogo { font-size:21px; font-weight:800; } .gate-box .glogo span { color:#fff; }
+  .gate-box p { color:var(--muted); font-size:13px; margin:4px 0 20px; }
   .gate-box input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border-2); background:var(--bg); color:#fff; font-size:15px; outline:none; margin-bottom:10px; }
   .gate-box button { width:100%; padding:12px; border-radius:10px; border:none; background:#fff; color:#0c0c0e; font-weight:700; font-size:15px; cursor:pointer; }
   .gate-box .gerr { color:var(--red); font-size:13px; margin-top:12px; min-height:18px; }
   .hidden { display:none !important; }
-  @media (max-width:820px){ aside{display:none;} main{padding:20px 16px;} }
+  @media (max-width:820px){ aside{display:none;} main{padding:20px 16px;} .fgrid{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -78,24 +98,43 @@
   <aside>
     <div class="logo">Sürüngen<span>Market</span><small>Yönetim paneli</small></div>
     <nav>
-      <a class="navitem" id="nav-user" style="pointer-events:none">👤 <span id="me-name"></span></a>
       <a class="navitem" data-sec="overview">📊 Genel bakış</a>
       <a class="navitem" data-sec="pending">📥 İlan onayları <span class="n hidden" id="pn"></span></a>
+      <a class="navitem" data-sec="active">📢 Aktif ilanlar</a>
       <a class="navitem" data-sec="reports">🚩 Şikayetler <span class="n hidden" id="rn"></span></a>
       <a class="navitem" data-sec="users">👥 Kullanıcılar</a>
+      <div class="navsep"></div>
       <a class="navitem" href="index.html">↩ Siteye dön</a>
-      <a class="navitem" id="logout">🚪 Çıkış</a>
+      <a class="navitem" id="logout">🚪 Çıkış (<span id="me-name"></span>)</a>
     </nav>
   </aside>
 
   <main>
     <h1 id="sec-title">Genel bakış</h1>
     <p class="sub" id="sec-sub">Hoş geldin</p>
-
     <div id="stats-wrap" class="stats"></div>
-
     <div id="section"></div>
   </main>
+</div>
+
+<!-- Düzenleme modalı -->
+<div class="overlay" id="edit-overlay">
+  <div class="modal">
+    <h2>İlanı düzenle</h2>
+    <div class="fgrid">
+      <div class="field full"><label>Başlık / tür</label><input id="e-title"></div>
+      <div class="field"><label>Kategori</label><select id="e-cat"></select></div>
+      <div class="field"><label>Durum</label><select id="e-status">
+        <option value="active">Yayında</option><option value="pending">Beklemede</option><option value="sold">Satıldı</option><option value="removed">Kaldırıldı</option>
+      </select></div>
+      <div class="field"><label>Fiyat (₺, 0 = ücretsiz)</label><input id="e-price" type="number" min="0"></div>
+      <div class="field"><label>Şehir</label><input id="e-city"></div>
+      <div class="field"><label>Cinsiyet</label><select id="e-sex"><option value="m">Erkek</option><option value="f">Dişi</option><option value="x">Bilinmiyor</option></select></div>
+      <div class="field"><label>Yaş</label><input id="e-age"></div>
+      <div class="field full"><label>Açıklama</label><textarea id="e-desc" rows="3"></textarea></div>
+    </div>
+    <div class="mactions"><button class="btn cancel" id="e-cancel">Vazgeç</button><button class="btn ok" id="e-save">Kaydet</button></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -109,9 +148,8 @@ const tl = n => Number(n).toLocaleString("tr-TR") + " ₺";
 const timeStr = iso => new Date(iso).toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
 function toast(m){ const t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none",2600); }
 
-let me = null;
+let me = null, categories = [], curSec = "pending";
 
-// ---- erişim kontrolü ----
 init();
 async function init(){
   const { data:{ user } } = await supabase.auth.getUser();
@@ -119,140 +157,189 @@ async function init(){
   const { data:prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   if(!prof || prof.role !== "admin"){ showGate("Bu hesabın yönetici yetkisi yok.", true); return; }
   me = prof;
+  const { data:cats } = await supabase.from("categories").select("id,slug,name").order("sort");
+  categories = cats || [];
+  fillCatSelect($("e-cat"));
   unlock();
 }
+function fillCatSelect(sel){ sel.innerHTML = categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join(""); }
 function showGate(msg, loggedIn){
-  $("gate").classList.remove("hidden");
-  $("panel").classList.add("hidden");
-  $("gate-sub").textContent = msg;
-  $("gate-form").style.display = loggedIn ? "none" : "";
-  if(loggedIn){ $("gerr").textContent = "Yönetici olmayan bir hesapla giriş yaptın. Doğru hesapla gir."; }
+  $("gate").classList.remove("hidden"); $("panel").classList.add("hidden");
+  $("gate-sub").textContent = msg; $("gate-form").style.display = loggedIn ? "none" : "";
+  if(loggedIn) $("gerr").textContent = "Yönetici olmayan bir hesapla giriş yaptın.";
 }
 async function unlock(){
-  $("gate").classList.add("hidden");
-  $("panel").classList.remove("hidden");
+  $("gate").classList.add("hidden"); $("panel").classList.remove("hidden");
   $("me-name").textContent = me.username;
   $("sec-sub").textContent = "Hoş geldin " + me.username;
-  await loadStats();
-  showSection("pending");
+  await loadStats(); showSection("pending");
 }
 
 $("g-login").onclick = doLogin;
 $("g-pass").addEventListener("keydown", e => e.key === "Enter" && doLogin());
 async function doLogin(){
-  const email = $("g-email").value.trim().toLowerCase();
-  const password = $("g-pass").value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({ email: $("g-email").value.trim().toLowerCase(), password: $("g-pass").value });
   if(error){ $("gerr").textContent = "E-posta veya şifre hatalı."; return; }
   init();
 }
 $("logout").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
 
-// ---- istatistikler ----
 async function loadStats(){
   const [pending, active, users, reports] = await Promise.all([
-    supabase.from("listings").select("id", { count:"exact", head:true }).eq("status","pending"),
-    supabase.from("listings").select("id", { count:"exact", head:true }).eq("status","active"),
-    supabase.from("profiles").select("id", { count:"exact", head:true }),
-    supabase.from("reports").select("id", { count:"exact", head:true }).eq("status","open"),
+    supabase.from("listings").select("id",{count:"exact",head:true}).eq("status","pending"),
+    supabase.from("listings").select("id",{count:"exact",head:true}).eq("status","active"),
+    supabase.from("profiles").select("id",{count:"exact",head:true}),
+    supabase.from("reports").select("id",{count:"exact",head:true}).eq("status","open"),
   ]);
   $("stats-wrap").innerHTML = `
-    <div class="stat"><div class="l">Yayındaki ilan</div><div class="v">${active.count ?? 0}</div></div>
-    <div class="stat"><div class="l">Onay bekleyen</div><div class="v">${pending.count ?? 0}</div></div>
-    <div class="stat"><div class="l">Kayıtlı kullanıcı</div><div class="v">${users.count ?? 0}</div></div>
-    <div class="stat"><div class="l">Açık şikayet</div><div class="v">${reports.count ?? 0}</div></div>`;
+    <div class="stat c"><div class="l">Yayındaki ilan</div><div class="v">${active.count ?? 0}</div></div>
+    <div class="stat b"><div class="l">Onay bekleyen</div><div class="v">${pending.count ?? 0}</div></div>
+    <div class="stat a"><div class="l">Kayıtlı kullanıcı</div><div class="v">${users.count ?? 0}</div></div>
+    <div class="stat d"><div class="l">Açık şikayet</div><div class="v">${reports.count ?? 0}</div></div>`;
   setBadge("pn", pending.count); setBadge("rn", reports.count);
 }
-function setBadge(id, n){ const el=$(id); if(n){ el.textContent=n; el.classList.remove("hidden"); } else el.classList.add("hidden"); }
+function setBadge(id,n){ const el=$(id); if(n){ el.textContent=n; el.classList.remove("hidden"); } else el.classList.add("hidden"); }
 
-// ---- bölümler ----
 document.querySelectorAll("[data-sec]").forEach(a => a.onclick = () => showSection(a.dataset.sec));
 function showSection(sec){
-  const titles = { overview:"Genel bakış", pending:"İlan onayları", reports:"Şikayetler", users:"Kullanıcılar" };
+  curSec = sec;
+  document.querySelectorAll("[data-sec]").forEach(a => a.classList.toggle("active", a.dataset.sec === sec));
+  const titles = { overview:"Genel bakış", pending:"İlan onayları", active:"Aktif ilanlar", reports:"Şikayetler", users:"Kullanıcılar" };
   $("sec-title").textContent = titles[sec] || "";
-  $("stats-wrap").style.display = sec === "overview" || sec === "pending" ? "grid" : "none";
+  $("stats-wrap").style.display = (sec === "overview" || sec === "pending") ? "grid" : "none";
   if(sec === "overview" || sec === "pending") loadPending();
+  else if(sec === "active") loadActive();
   else if(sec === "reports") loadReports();
   else if(sec === "users") loadUsers();
 }
 
-// ---- onay bekleyen ilanlar ----
+const LISTING_SELECT = "id,title,price,sex,age_text,city,description,category_id,status,created_at,seller:profiles!listings_user_id_fkey(username),images:listing_images(storage_path,position)";
+const cover = l => { const i=(l.images||[]).sort((a,b)=>a.position-b.position)[0]; return i?`<img class="thumb" src="${publicImage(i.storage_path)}">`:`<div class="thumb"></div>`; };
+const typeTag = l => l.price===0?`<span class="tag sahiplendirme">Sahiplendirme</span>`:`<span class="tag satis">Satılık</span>`;
+
+// ---- onay bekleyen ----
 async function loadPending(){
-  const { data, error } = await supabase.from("listings")
-    .select("id,title,price,sex,age_text,city,created_at,seller:profiles!listings_user_id_fkey(username),images:listing_images(storage_path,position)")
-    .eq("status","pending").order("created_at",{ ascending:true });
-  if(error){ $("section").innerHTML = `<div class="empty">Yüklenemedi: ${esc(error.message)}</div>`; return; }
-  if(!data.length){ $("section").innerHTML = `<div class="panel"><div class="empty">Onay bekleyen ilan yok 🎉</div></div>`; return; }
-  $("section").innerHTML = `<h2>Onay bekleyen ilanlar (${data.length})</h2><div class="panel"><table>
-    <thead><tr><th></th><th>İlan</th><th>Tip</th><th>Cins/Yaş</th><th>Fiyat</th><th></th></tr></thead>
-    <tbody>${data.map(l => {
-      const img = (l.images||[]).sort((a,b)=>a.position-b.position)[0];
-      const cover = img ? `<img class="thumb" src="${publicImage(img.storage_path)}">` : `<div class="thumb"></div>`;
-      const free = l.price === 0;
-      const sx = l.sex==="m"?"♂":l.sex==="f"?"♀":"—";
-      return `<tr data-id="${l.id}">
-        <td>${cover}</td>
-        <td>${esc(l.title)}<div class="who">${esc(l.seller?.username||"")} · ${esc(l.city||"")} · ${timeStr(l.created_at)}</div></td>
-        <td><span class="tag ${free?"sahiplendirme":"satis"}">${free?"Sahiplendirme":"Satılık"}</span></td>
-        <td>${sx} ${esc(l.age_text||"")}</td>
-        <td>${free?"Ücretsiz":tl(l.price)}</td>
-        <td style="white-space:nowrap"><button class="btn ok" data-a="approve">Onayla</button><button class="btn no" data-a="reject">Reddet</button></td>
-      </tr>`;
-    }).join("")}</tbody></table></div>`;
-  $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => moderate(b.closest("tr").dataset.id, b.dataset.a, b));
+  const { data, error } = await supabase.from("listings").select(LISTING_SELECT).eq("status","pending").order("created_at",{ascending:true});
+  if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
+  if(!data.length) return $("section").innerHTML = `<div class="sec-head"><h2>Onay bekleyen ilanlar</h2></div><div class="panel"><div class="empty">Onay bekleyen ilan yok 🎉</div></div>`;
+  $("section").innerHTML = `<div class="sec-head"><h2>Onay bekleyen ilanlar</h2><span class="cnt">${data.length} ilan</span></div>
+    <div class="panel"><table><thead><tr><th></th><th>İlan</th><th>Tip</th><th>Cins/Yaş</th><th>Fiyat</th><th></th></tr></thead>
+    <tbody>${data.map(l => `<tr data-id="${l.id}">
+      <td>${cover(l)}</td>
+      <td>${esc(l.title)}<div class="who">${esc(l.seller?.username||"")} · ${esc(l.city||"")} · ${timeStr(l.created_at)}</div></td>
+      <td>${typeTag(l)}</td><td>${l.sex==="m"?"♂":l.sex==="f"?"♀":"—"} ${esc(l.age_text||"")}</td>
+      <td>${l.price===0?"Ücretsiz":tl(l.price)}</td>
+      <td style="white-space:nowrap"><button class="btn ok" data-a="approve">Onayla</button><button class="btn no" data-a="reject">Reddet</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+  bindRowButtons(async (id, a, btn) => {
+    const status = a==="approve"?"active":"removed";
+    if(await update(id,{status},btn)){ removeRow(btn); toast(a==="approve"?"İlan onaylandı ve yayına alındı ✓":"İlan reddedildi"); await loadStats(); }
+  });
 }
-async function moderate(id, action, btn){
-  const status = action === "approve" ? "active" : "removed";
-  btn.disabled = true;
-  const { error } = await supabase.from("listings").update({ status }).eq("id", id);
-  if(error){ toast("İşlem başarısız: " + error.message); btn.disabled=false; return; }
-  const tr = btn.closest("tr"); tr.style.transition="opacity .3s"; tr.style.opacity="0";
-  setTimeout(async () => { tr.remove(); await loadStats();
-    if(!$("section").querySelector("tbody tr")) loadPending();
-  }, 300);
-  toast(action === "approve" ? "İlan onaylandı ve yayına alındı ✓" : "İlan reddedildi");
+
+// ---- aktif ilanlar (düzenle / sil) ----
+async function loadActive(){
+  const { data, error } = await supabase.from("listings").select(LISTING_SELECT).eq("status","active").order("created_at",{ascending:false});
+  if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
+  if(!data.length) return $("section").innerHTML = `<div class="sec-head"><h2>Aktif ilanlar</h2></div><div class="panel"><div class="empty">Yayında ilan yok.</div></div>`;
+  window._active = {}; data.forEach(l => window._active[l.id] = l);
+  $("section").innerHTML = `<div class="sec-head"><h2>Aktif ilanlar</h2><span class="cnt">${data.length} yayında</span></div>
+    <div class="panel"><table><thead><tr><th></th><th>İlan</th><th>Tip</th><th>Fiyat</th><th>Durum</th><th></th></tr></thead>
+    <tbody>${data.map(l => `<tr data-id="${l.id}">
+      <td>${cover(l)}</td>
+      <td>${esc(l.title)}<div class="who">${esc(l.seller?.username||"")} · ${esc(l.city||"")}</div></td>
+      <td>${typeTag(l)}</td><td>${l.price===0?"Ücretsiz":tl(l.price)}</td>
+      <td><span class="tag aktif">Yayında</span></td>
+      <td style="white-space:nowrap"><button class="btn ghost" data-a="edit">Düzenle</button><button class="btn no" data-a="del">Sil</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+  bindRowButtons(async (id, a, btn) => {
+    if(a==="edit") return openEdit(window._active[id]);
+    if(a==="del"){
+      if(!confirm("Bu ilan kalıcı olarak silinecek. Emin misin?")) return;
+      const { error } = await supabase.from("listings").delete().eq("id", id);
+      if(error) return toast("Silinemedi: " + error.message);
+      removeRow(btn); toast("İlan silindi"); await loadStats();
+    }
+  });
 }
+
+// ---- düzenleme modalı ----
+let editId = null;
+function openEdit(l){
+  editId = l.id;
+  $("e-title").value = l.title || "";
+  $("e-cat").value = l.category_id || (categories[0]?.id ?? "");
+  $("e-status").value = l.status || "active";
+  $("e-price").value = l.price ?? 0;
+  $("e-city").value = l.city || "";
+  $("e-sex").value = l.sex || "x";
+  $("e-age").value = l.age_text || "";
+  $("e-desc").value = l.description || "";
+  $("edit-overlay").classList.add("open");
+}
+$("e-cancel").onclick = () => $("edit-overlay").classList.remove("open");
+$("edit-overlay").addEventListener("click", e => { if(e.target.id === "edit-overlay") $("edit-overlay").classList.remove("open"); });
+$("e-save").onclick = async () => {
+  const patch = {
+    title: $("e-title").value.trim(),
+    category_id: parseInt($("e-cat").value) || null,
+    status: $("e-status").value,
+    price: parseInt($("e-price").value) || 0,
+    city: $("e-city").value.trim() || null,
+    sex: $("e-sex").value,
+    age_text: $("e-age").value.trim() || null,
+    description: $("e-desc").value.trim() || null
+  };
+  const { error } = await supabase.from("listings").update(patch).eq("id", editId);
+  if(error) return toast("Kaydedilemedi: " + error.message);
+  $("edit-overlay").classList.remove("open");
+  toast("İlan güncellendi ✓");
+  await loadStats();
+  if(curSec === "active") loadActive();
+};
 
 // ---- şikayetler ----
 async function loadReports(){
   const { data, error } = await supabase.from("reports")
     .select("id,reason,detail,status,created_at,listing:listings(title),reporter:profiles!reports_reporter_id_fkey(username)")
-    .eq("status","open").order("created_at",{ ascending:false });
-  if(error){ $("section").innerHTML = `<div class="empty">Yüklenemedi: ${esc(error.message)}</div>`; return; }
-  if(!data.length){ $("section").innerHTML = `<div class="panel"><div class="empty">Açık şikayet yok.</div></div>`; return; }
-  $("section").innerHTML = `<h2>Açık şikayetler (${data.length})</h2><div class="panel"><table>
-    <thead><tr><th>İlan</th><th>Şikayet eden</th><th>Sebep</th><th>Tarih</th><th></th></tr></thead>
+    .eq("status","open").order("created_at",{ascending:false});
+  if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
+  if(!data.length) return $("section").innerHTML = `<div class="sec-head"><h2>Açık şikayetler</h2></div><div class="panel"><div class="empty">Açık şikayet yok.</div></div>`;
+  $("section").innerHTML = `<div class="sec-head"><h2>Açık şikayetler</h2><span class="cnt">${data.length}</span></div>
+    <div class="panel"><table><thead><tr><th>İlan</th><th>Şikayet eden</th><th>Sebep</th><th>Tarih</th><th></th></tr></thead>
     <tbody>${data.map(r => `<tr data-id="${r.id}">
-      <td>${esc(r.listing?.title||"—")}</td>
-      <td>${esc(r.reporter?.username||"—")}</td>
-      <td>${esc(r.reason)}${r.detail?`<div class="who">${esc(r.detail)}</div>`:""}</td>
-      <td>${timeStr(r.created_at)}</td>
+      <td>${esc(r.listing?.title||"—")}</td><td>${esc(r.reporter?.username||"—")}</td>
+      <td>${esc(r.reason)}${r.detail?`<div class="who">${esc(r.detail)}</div>`:""}</td><td>${timeStr(r.created_at)}</td>
       <td style="white-space:nowrap"><button class="btn ok" data-a="resolve">Çözüldü</button><button class="btn no" data-a="dismiss">Yoksay</button></td>
     </tr>`).join("")}</tbody></table></div>`;
-  $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => resolveReport(b.closest("tr").dataset.id, b.dataset.a, b));
-}
-async function resolveReport(id, action, btn){
-  btn.disabled = true;
-  const { error } = await supabase.from("reports").update({ status: action === "resolve" ? "resolved" : "dismissed" }).eq("id", id);
-  if(error){ toast("İşlem başarısız"); btn.disabled=false; return; }
-  const tr = btn.closest("tr"); tr.remove(); await loadStats();
-  if(!$("section").querySelector("tbody tr")) loadReports();
-  toast("Şikayet güncellendi");
+  bindRowButtons(async (id, a, btn) => {
+    const { error } = await supabase.from("reports").update({ status: a==="resolve"?"resolved":"dismissed" }).eq("id", id);
+    if(error) return toast("İşlem başarısız");
+    removeRow(btn); toast("Şikayet güncellendi"); await loadStats();
+  });
 }
 
 // ---- kullanıcılar ----
 async function loadUsers(){
-  const { data, error } = await supabase.from("profiles")
-    .select("id,username,city,role,created_at").order("created_at",{ ascending:false }).limit(200);
-  if(error){ $("section").innerHTML = `<div class="empty">Yüklenemedi: ${esc(error.message)}</div>`; return; }
-  $("section").innerHTML = `<h2>Kullanıcılar (${data.length})</h2><div class="panel"><table>
-    <thead><tr><th>Kullanıcı</th><th>Şehir</th><th>Rol</th><th>Kayıt</th></tr></thead>
-    <tbody>${data.map(u => `<tr>
-      <td>${esc(u.username)}</td><td>${esc(u.city||"—")}</td>
-      <td>${u.role==="admin"?'<span class="tag sahiplendirme">admin</span>':"üye"}</td>
-      <td>${timeStr(u.created_at)}</td>
-    </tr>`).join("")}</tbody></table></div>`;
+  const { data, error } = await supabase.from("profiles").select("id,username,city,role,created_at").order("created_at",{ascending:false}).limit(300);
+  if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
+  $("section").innerHTML = `<div class="sec-head"><h2>Kullanıcılar</h2><span class="cnt">${data.length}</span></div>
+    <div class="panel"><table><thead><tr><th>Kullanıcı</th><th>Şehir</th><th>Rol</th><th>Kayıt</th></tr></thead>
+    <tbody>${data.map(u => `<tr><td>${esc(u.username)}</td><td>${esc(u.city||"—")}</td>
+      <td>${u.role==="admin"?'<span class="tag sahiplendirme">admin</span>':"üye"}</td><td>${timeStr(u.created_at)}</td></tr>`).join("")}</tbody></table></div>`;
 }
+
+// ---- ortak yardımcılar ----
+function bindRowButtons(handler){
+  $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => handler(b.closest("tr").dataset.id, b.dataset.a, b));
+}
+async function update(id, patch, btn){
+  if(btn) btn.disabled = true;
+  const { error } = await supabase.from("listings").update(patch).eq("id", id);
+  if(error){ toast("İşlem başarısız: " + error.message); if(btn) btn.disabled=false; return false; }
+  return true;
+}
+function removeRow(btn){ const tr = btn.closest("tr"); tr.style.transition="opacity .25s"; tr.style.opacity="0"; setTimeout(()=>tr.remove(),250); }
 </script>
 </body>
 </html>

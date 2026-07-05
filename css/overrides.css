@@ -1,0 +1,24 @@
+/* ============================================================
+   Yerleşim iyileştirmeleri — yan boşlukları daraltır.
+   (Yazı boyutları DEĞİŞMEZ; sadece içerik alanı genişler.)
+   styles.css'ten SONRA yüklenir, o yüzden onu geçersiz kılar.
+   ============================================================ */
+
+.topbar, nav ul, .hero-inner, .section, .trust-inner, .foot-inner, .legal p, #detail {
+  max-width: 1560px !important;
+}
+
+/* Kategori ve ilan kartları geniş ekranda daha çok sığsın (boşluklar otursun) */
+.cats { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; }
+.grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important; }
+
+/* Hero'nun boş görsel kutusu biraz küçülsün, sağa yaslanınca dengeli dursun */
+.hero-inner { gap: 56px !important; padding-top: 56px !important; padding-bottom: 56px !important; }
+.hero-img { width: 42% !important; }
+
+/* Bölümler arası dikey boşluk biraz otursun */
+.section { padding-top: 46px !important; }
+
+@media (max-width: 900px) {
+  .hero-img { width: 100% !important; }
+}
