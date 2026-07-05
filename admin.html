@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yönetim Paneli — SürüngenMarket</title>
+<style>
+  :root {
+    --bg: #0c0c0e; --bg-2: #141417; --bg-3: #1c1c21;
+    --border: #26262c; --border-2: #35353d;
+    --text: #f2f2f4; --muted: #9a9aa3;
+    --accent: #ffffff; --accent-2: #ffffff;
+    --red: #ff6b6b; --amber: #f0b25a; --blue: #5aa8e8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+  aside { width: 230px; background: var(--bg-2); border-right: 1px solid var(--border); padding: 20px 14px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; }
+  .logo { font-size: 17px; font-weight: 800; padding: 4px 10px 18px; }
+  .logo span { color: var(--accent-2); }
+  .logo small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+  aside a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; margin-bottom: 2px; transition: all .15s; }
+  aside a:hover { background: var(--bg-3); color: #fff; }
+  aside a.active { background: rgba(255,255,255,.08); color: #fff; }
+  aside a .n { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
+
+  main { flex: 1; padding: 28px 32px; max-width: 1100px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 30px; }
+  .stat { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: transform .2s, border-color .2s; }
+  .stat:hover { transform: translateY(-3px); border-color: var(--border-2); }
+  .stat .l { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+  .stat .v { font-size: 26px; font-weight: 700; }
+  .stat .d { font-size: 12px; margin-top: 4px; }
+  .up { color: #c9c9ce; } .warn { color: var(--amber); } .down { color: var(--red); }
+
+  h2 { font-size: 16px; font-weight: 700; margin: 26px 0 14px; }
+  .panel { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 12px 16px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr { transition: background .15s; }
+  tbody tr:hover { background: var(--bg-3); }
+  .thumb { width: 52px; height: 40px; border-radius: 7px; object-fit: cover; }
+  .who { font-size: 12px; color: var(--muted); }
+  .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+  .tag.bekliyor { background: rgba(240,178,90,.14); color: var(--amber); }
+  .tag.riskli { background: rgba(255,107,107,.14); color: var(--red); }
+  .tag.satis { background: rgba(255,255,255,.07); color: #c9c9ce; }
+  .tag.sahiplendirme { background: rgba(255,255,255,.1); color: #fff; }
+  .btn { padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s, transform .1s; }
+  .btn:hover { opacity: .85; } .btn:active { transform: scale(.96); }
+  .ok { background: #fff; color: #0c0c0e; }
+  .no { background: transparent; color: var(--red); border: 1px solid rgba(255,107,107,.4); margin-left: 6px; }
+  .empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+  .row-out { animation: out .35s ease forwards; }
+  @keyframes out { to { opacity: 0; transform: translateX(24px); } }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-3); border: 1px solid var(--border-2); border-left: 3px solid #fff; padding: 12px 18px; border-radius: 10px; font-size: 13.5px; display: none; animation: pop .25s ease; }
+  @keyframes pop { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (max-width: 800px) { aside { display: none; } main { padding: 20px 16px; } }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="logo">Sürüngen<span>Market</span><small>Yönetim paneli</small></div>
+  <a href="#" class="active">📊 Genel bakış</a>
+  <a href="#onay">📥 İlan onayları <span class="n" id="pending-n">4</span></a>
+  <a href="#">👥 Kullanıcılar</a>
+  <a href="#sikayet">🚩 Şikayetler <span class="n">2</span></a>
+  <a href="#">💬 Mesaj denetimi</a>
+  <a href="#">🚫 Yasaklı türler listesi</a>
+  <a href="#">⚙️ Ayarlar</a>
+</aside>
+
+<main>
+  <h1>Genel bakış</h1>
+  <p class="sub">Hoş geldin furk4n · Son giriş: bugün 14:32</p>
+
+  <div class="stats">
+    <div class="stat"><div class="l">Yayındaki ilan</div><div class="v">412</div><div class="d up">▲ 23 bu hafta</div></div>
+    <div class="stat"><div class="l">Onay bekleyen</div><div class="v" id="stat-pending">4</div><div class="d warn">İşlem gerekli</div></div>
+    <div class="stat"><div class="l">Kayıtlı kullanıcı</div><div class="v">1.847</div><div class="d up">▲ 96 bu hafta</div></div>
+    <div class="stat"><div class="l">Açık şikayet</div><div class="v">2</div><div class="d down">İncele</div></div>
+  </div>
+
+  <h2 id="onay">Onay bekleyen ilanlar</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th></th><th>İlan</th><th>Tip</th><th>Cinsiyet / yaş</th><th>Fiyat</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="queue">
+        <tr>
+          <td><img class="thumb" src="https://loremflickr.com/160/120/leopardgecko?lock=41" alt=""></td>
+          <td>Leopar gecko — Mack Snow<div class="who">GeckoTR_Uretim · İstanbul · 14:02</div></td>
+          <td><span class="tag satis">Satılık</span></td>
+          <td>♀ '25</td>
+          <td>2.800 ₺</td>
+          <td><span class="tag bekliyor">Bekliyor</span></td>
+          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
+        </tr>
+        <tr>
+          <td><img class="thumb" src="https://loremflickr.com/160/120/tortoise?lock=42" alt=""></td>
+          <td>Yunan kaplumbağası<div class="who">yeni_uye_34 · Ankara · 13:40</div></td>
+          <td><span class="tag satis">Satılık</span></td>
+          <td>♂ '20</td>
+          <td>1.500 ₺</td>
+          <td><span class="tag riskli">⚠ Yasaklı tür şüphesi</span></td>
+          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
+        </tr>
+        <tr>
+          <td><img class="thumb" src="https://loremflickr.com/160/120/ballpython?lock=43" alt=""></td>
+          <td>Top piton — Spider<div class="who">AnkaraPython · Ankara · 12:15</div></td>
+          <td><span class="tag satis">Satılık</span></td>
+          <td>♂ '24</td>
+          <td>7.200 ₺</td>
+          <td><span class="tag bekliyor">Bekliyor</span></td>
+          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
+        </tr>
+        <tr>
+          <td><img class="thumb" src="https://loremflickr.com/160/120/hedgehog?lock=44" alt=""></td>
+          <td>Pigme kirpi<div class="who">MiniPets · İzmir · 10:48</div></td>
+          <td><span class="tag sahiplendirme">Sahiplendirme</span></td>
+          <td>♀ 8 aylık</td>
+          <td>Ücretsiz</td>
+          <td><span class="tag bekliyor">Bekliyor</span></td>
+          <td style="white-space:nowrap"><button class="btn ok" onclick="approve(this)">Onayla</button><button class="btn no" onclick="reject(this)">Reddet</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">Bekleyen ilan kalmadı 🎉</div>
+  </div>
+
+  <h2 id="sikayet">Açık şikayetler</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>İlan</th><th>Şikayet eden</th><th>Sebep</th><th>Tarih</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Sugar glider çifti</td><td>kullanici_92</td><td>"Ücretsiz yazıyor ama para istiyor"</td><td>dün</td><td><button class="btn ok">İncele</button></td></tr>
+        <tr><td>Mısır yılanı</td><td>terra_fan</td><td>"Fotoğraflar başka siteden alınmış"</td><td>2 gün önce</td><td><button class="btn ok">İncele</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Son kayıt olan kullanıcılar</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Kullanıcı</th><th>E-posta</th><th>Şehir</th><th>Kayıt</th><th>İlan</th></tr></thead>
+      <tbody>
+        <tr><td>terra_fan</td><td>t***@gmail.com</td><td>İstanbul</td><td>bugün</td><td>0</td></tr>
+        <tr><td>yeni_uye_34</td><td>y***@hotmail.com</td><td>Ankara</td><td>bugün</td><td>1</td></tr>
+        <tr><td>gecko_sever</td><td>g***@gmail.com</td><td>Bursa</td><td>dün</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function done(row, msg) {
+  row.classList.add("row-out");
+  setTimeout(() => {
+    row.remove();
+    const left = document.querySelectorAll("#queue tr").length;
+    document.getElementById("pending-n").textContent = left;
+    document.getElementById("stat-pending").textContent = left;
+    if (!left) document.getElementById("empty").style.display = "block";
+  }, 350);
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.style.display = "none", 2500);
+}
+function approve(btn) { done(btn.closest("tr"), "İlan onaylandı ve yayına alındı ✓"); }
+function reject(btn) { done(btn.closest("tr"), "İlan reddedildi, kullanıcıya bildirim gönderildi"); }
+</script>
+
+</body>
+</html>
