@@ -1,9 +1,9 @@
 // ============================================================================
 // owner.js  (kök seviyede ek modül)
-//   1) Site görsellerini Supabase'den çeker + önbellekler (flash yok)
-//   2) Üst menüyü (kategoriler) veritabanından dinamik oluşturur
-//   3) "İlanlarım": kullanıcının kendi ilanlarını düzenleme / silme
-//   4) İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
+//   1) Site görselleri (önbellekli), 2) dinamik üst menü,
+//   3) "İlanlarım" düzenle/sil, 4) zorunlu SMS doğrulama,
+//   5) giriş sonrası hero "Hesap oluştur" gizleme,
+//   6) profil sayfasında takip sistemi (takipçi / takip / takip et)
 // ============================================================================
 import { supabase, publicImage } from "./js/supabase.js";
 
@@ -16,7 +16,7 @@ let categories = [];
 let currentUid = null;
 let phoneVerified = false;
 
-applyMap(readCache());   // görselleri en erken anda uygula
+applyMap(readCache());
 
 boot();
 async function boot() {
@@ -26,17 +26,19 @@ async function boot() {
   categories = cats || [];
   buildNav(categories);
   injectButton();
+  setupProfileObserver();
   supabase.auth.onAuthStateChange(async () => { await refresh(); injectButton(); });
 }
 async function refresh() {
   const { data:{ user } } = await supabase.auth.getUser();
   currentUid = user ? user.id : null;
   phoneVerified = !!(user && user.phone_confirmed_at);
+  // Giriş yapılınca hero'daki "Hesap oluştur" gizlensin
+  const hr = document.getElementById("hero-register");
+  if (hr) hr.style.display = currentUid ? "none" : "";
 }
 
-// ---------------------------------------------------------------------------
-// Üst menüyü kategorilere göre yeniden kur (rename/sıra/yeni tür yansır)
-// ---------------------------------------------------------------------------
+// ---- Üst menü (kategoriler) ----
 function buildNav(cats) {
   const ul = document.getElementById("nav");
   if (!ul || !cats.length) return;
@@ -45,12 +47,9 @@ function buildNav(cats) {
     cats.map(c => `<li><a href="#" data-cat="${esc(c.slug)}">${esc(c.name)}</a></li>`).join("") +
     `<li><a href="#" data-page="rehberler">Bakım rehberleri</a></li>` +
     `<li><a href="#" data-page="hakkinda">Hakkında</a></li>`;
-  // Not: app.js body üzerinde click dinlediği için yeni linkler otomatik çalışır.
 }
 
-// ---------------------------------------------------------------------------
-// Site görselleri — önbellekli uygulama
-// ---------------------------------------------------------------------------
+// ---- Site görselleri (önbellekli) ----
 const CACHE_KEY = "sm_site_assets_v1";
 function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch { return {}; } }
 function writeCache(map) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(map)); } catch {} }
@@ -101,9 +100,60 @@ function applyCats(map) {
   if (!cats._obs) { cats._obs = new MutationObserver(doIt); cats._obs.observe(cats, { childList: true }); }
 }
 
-// ---------------------------------------------------------------------------
-// "İlanlarım" + düzenle/sil
-// ---------------------------------------------------------------------------
+// ---- Takip sistemi (profil sayfasında) ----
+function setupProfileObserver() {
+  const page = document.getElementById("page");
+  if (!page) return;
+  const check = () => { const head = page.querySelector(".profile-head:not([data-follow])"); if (head) enhanceProfile(head); };
+  new MutationObserver(check).observe(page, { childList: true, subtree: true });
+  check();
+}
+async function enhanceProfile(head) {
+  head.dataset.follow = "1";
+  const nameEl = head.querySelector(".pn");
+  if (!nameEl) return;
+  const username = nameEl.textContent.trim();
+  const { data: prof } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
+  if (!prof) return;
+  const sellerId = prof.id;
+
+  const [followersRes, followingRes] = await Promise.all([
+    supabase.from("follows").select("*", { count:"exact", head:true }).eq("seller_id", sellerId),
+    supabase.from("follows").select("*", { count:"exact", head:true }).eq("follower_id", sellerId),
+  ]);
+  let isFollowing = false;
+  if (currentUid && currentUid !== sellerId) {
+    const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", currentUid).eq("seller_id", sellerId).maybeSingle();
+    isFollowing = !!f;
+  }
+
+  const target = head.querySelector(".profile-stats") || head;
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "display:flex;align-items:center;gap:22px;margin-left:4px;";
+  wrap.innerHTML =
+    `<div style="text-align:center"><div id="pf-followers" style="font-size:19px;font-weight:800">${followersRes.count || 0}</div><div style="font-size:11.5px;color:var(--muted)">takipçi</div></div>
+     <div style="text-align:center"><div style="font-size:19px;font-weight:800">${followingRes.count || 0}</div><div style="font-size:11.5px;color:var(--muted)">takip</div></div>
+     ${currentUid && currentUid !== sellerId ? `<button class="btn btn-ghost" id="pf-follow">${isFollowing ? "✓ Takip ediliyor" : "Takip et"}</button>` : ""}`;
+  target.appendChild(wrap);
+
+  const btn = wrap.querySelector("#pf-follow");
+  if (btn) btn.onclick = async () => {
+    btn.disabled = true;
+    if (isFollowing) {
+      await supabase.from("follows").delete().eq("follower_id", currentUid).eq("seller_id", sellerId);
+      isFollowing = false;
+    } else {
+      await supabase.from("follows").insert({ follower_id: currentUid, seller_id: sellerId });
+      isFollowing = true;
+    }
+    btn.disabled = false;
+    btn.textContent = isFollowing ? "✓ Takip ediliyor" : "Takip et";
+    const c = wrap.querySelector("#pf-followers");
+    c.textContent = Math.max(0, (parseInt(c.textContent) || 0) + (isFollowing ? 1 : -1));
+  };
+}
+
+// ---- "İlanlarım" + düzenle/sil ----
 function injectButton() {
   const holder = document.getElementById("auth-in");
   if (!holder) return;
@@ -208,9 +258,7 @@ function openEdit(l) {
   ov.classList.add("open");
 }
 
-// ---------------------------------------------------------------------------
-// İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
-// ---------------------------------------------------------------------------
+// ---- Zorunlu telefon (SMS) doğrulaması ----
 document.addEventListener("click", e => {
   const b = e.target.closest && e.target.closest("#btn-new");
   if (!b) return;
