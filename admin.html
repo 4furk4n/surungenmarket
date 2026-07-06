@@ -31,7 +31,7 @@
   .stat.b::before { background:var(--amber); } .stat.c::before { background:var(--blue); } .stat.d::before { background:var(--red); }
   .stat .l { font-size:12.5px; color:var(--muted); margin-bottom:8px; }
   .stat .v { font-size:28px; font-weight:800; letter-spacing:-.5px; }
-  .sec-head { display:flex; align-items:center; justify-content:space-between; margin:26px 0 14px; }
+  .sec-head { display:flex; align-items:center; justify-content:space-between; margin:26px 0 14px; gap:12px; }
   .sec-head h2 { font-size:17px; font-weight:700; }
   .sec-head .cnt { font-size:13px; color:var(--muted); }
   .panel { background:var(--bg-2); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
@@ -63,8 +63,8 @@
   .fgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .field { display:flex; flex-direction:column; gap:6px; } .field.full { grid-column:1/-1; }
   .field label { font-size:12.5px; font-weight:600; color:var(--muted); }
-  .field input, .field select, .field textarea { padding:10px 12px; border:1px solid var(--border-2); border-radius:9px; background:var(--bg); color:#fff; font-size:14px; outline:none; font-family:inherit; }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color:#fff; }
+  .field input, .field select, .field textarea, .inp { padding:10px 12px; border:1px solid var(--border-2); border-radius:9px; background:var(--bg); color:#fff; font-size:14px; outline:none; font-family:inherit; }
+  .field input:focus, .field select:focus, .field textarea:focus, .inp:focus { border-color:#fff; }
   .field .cb { flex-direction:row; align-items:center; gap:8px; color:var(--text); font-weight:500; font-size:13.5px; cursor:pointer; }
   .mactions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
   .cancel { background:var(--bg-3); color:var(--text); }
@@ -108,6 +108,7 @@
       <a class="navitem" data-sec="overview">📊 Genel bakış</a>
       <a class="navitem" data-sec="pending">📥 İlan onayları <span class="n hidden" id="pn"></span></a>
       <a class="navitem" data-sec="active">📢 Aktif ilanlar</a>
+      <a class="navitem" data-sec="cats">🗂️ Kategoriler</a>
       <a class="navitem" data-sec="assets">🖼️ Site görselleri</a>
       <a class="navitem" data-sec="guides">📚 Bakım rehberleri</a>
       <a class="navitem" data-sec="reports">🚩 Şikayetler <span class="n hidden" id="rn"></span></a>
@@ -152,11 +153,7 @@
     <h2 id="g-modal-title">Rehber</h2>
     <div class="fgrid">
       <div class="field full"><label>Tür adı *</label><input id="gf-name" placeholder="Örn: Leopar Gecko"></div>
-      <div class="field"><label>Kategori</label><select id="gf-cat">
-        <option value="yilan">Yılanlar</option><option value="kertenkele">Kertenkeleler & geckolar</option>
-        <option value="kaplumbaga">Kaplumbağalar</option><option value="amfibi">Amfibiler</option>
-        <option value="eklem">Eklem bacaklılar</option><option value="memeli">Egzotik memeliler</option>
-        <option value="kus">Egzotik kuşlar</option></select></div>
+      <div class="field"><label>Kategori</label><select id="gf-cat"></select></div>
       <div class="field"><label>Zorluk</label><input id="gf-level" placeholder="Başlangıç / Orta / İleri"></div>
       <div class="field full"><label>Bilimsel ad (latince)</label><input id="gf-latin" placeholder="Eublepharis macularius"></div>
       <div class="field"><label>Ömür</label><input id="gf-lifespan" placeholder="15–20 yıl"></div>
@@ -188,7 +185,6 @@ const tl = n => Number(n).toLocaleString("tr-TR") + " ₺";
 const timeStr = iso => new Date(iso).toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
 const siteImg = p => p ? supabase.storage.from("site-assets").getPublicUrl(p).data.publicUrl : null;
 function toast(m){ const t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none",3000); }
-const CAT_NAMES = { yilan:"Yılanlar", kertenkele:"Kertenkeleler & geckolar", kaplumbaga:"Kaplumbağalar", amfibi:"Amfibiler", eklem:"Eklem bacaklılar", memeli:"Egzotik memeliler", kus:"Egzotik kuşlar" };
 function slugify(s){ return String(s||"").toLowerCase()
   .replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/İ/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u")
   .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
@@ -203,10 +199,14 @@ async function init(){
   const { data:prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   if(!prof || prof.role !== "admin"){ showGate("Bu hesabın yönetici yetkisi yok.", true); return; }
   me = prof;
-  const { data:cats } = await supabase.from("categories").select("id,slug,name").order("sort");
-  categories = cats || [];
-  $("e-cat").innerHTML = categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  await reloadCategories();
   unlock();
+}
+async function reloadCategories(){
+  const { data } = await supabase.from("categories").select("id,slug,name,sort").order("sort");
+  categories = data || [];
+  $("e-cat").innerHTML = categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  $("gf-cat").innerHTML = categories.map(c => `<option value="${c.slug}">${esc(c.name)}</option>`).join("");
 }
 function showGate(msg, loggedIn){
   $("gate").classList.remove("hidden"); $("panel").classList.add("hidden");
@@ -247,11 +247,12 @@ document.querySelectorAll("[data-sec]").forEach(a => a.onclick = () => showSecti
 function showSection(sec){
   curSec = sec;
   document.querySelectorAll("[data-sec]").forEach(a => a.classList.toggle("active", a.dataset.sec === sec));
-  const titles = { overview:"Genel bakış", pending:"İlan onayları", active:"Aktif ilanlar", assets:"Site görselleri", guides:"Bakım rehberleri", reports:"Şikayetler", users:"Kullanıcılar" };
+  const titles = { overview:"Genel bakış", pending:"İlan onayları", active:"Aktif ilanlar", cats:"Kategoriler", assets:"Site görselleri", guides:"Bakım rehberleri", reports:"Şikayetler", users:"Kullanıcılar" };
   $("sec-title").textContent = titles[sec] || "";
   $("stats-wrap").style.display = (sec === "overview" || sec === "pending") ? "grid" : "none";
   if(sec === "overview" || sec === "pending") loadPending();
   else if(sec === "active") loadActive();
+  else if(sec === "cats") loadCats();
   else if(sec === "assets") loadAssets();
   else if(sec === "guides") loadGuides();
   else if(sec === "reports") loadReports();
@@ -300,25 +301,76 @@ async function loadActive(){
   });
 }
 
-// ---- SİTE GÖRSELLERİ ----
-const ASSET_SLOTS = [
-  { key:"hero", label:"Ana sayfa büyük görsel (hero)" },
-  { key:"logo", label:"Logo (üst bar)" },
-  { key:"banner", label:"Banner (opsiyonel)" },
-  { key:"cat_yilan", label:"Kategori: Yılanlar" },
-  { key:"cat_kertenkele", label:"Kategori: Kertenkeleler & geckolar" },
-  { key:"cat_kaplumbaga", label:"Kategori: Kaplumbağalar" },
-  { key:"cat_amfibi", label:"Kategori: Amfibiler" },
-  { key:"cat_eklem", label:"Kategori: Eklem bacaklılar" },
-  { key:"cat_memeli", label:"Kategori: Egzotik memeliler" },
-  { key:"cat_kus", label:"Kategori: Egzotik kuşlar" },
-];
+// ---- KATEGORİLER (konu başlıkları) ----
+async function loadCats(){
+  await reloadCategories();
+  const data = categories;
+  $("section").innerHTML = `<div class="sec-head"><h2>Kategoriler (üst menü / konu başlıkları)</h2>
+      <button class="btn ok" id="c-new">+ Yeni tür</button></div>
+    <p style="color:var(--muted);font-size:13px;margin:-6px 0 14px;">↑ ↓ ile sırayı değiştir · adı düzenleyip Kaydet · yeni tür ekleyince "Site görselleri"nde de kutusu çıkar.</p>
+    <div class="panel"><table><thead><tr><th>Sıra</th><th>Ad</th><th>Slug</th><th></th></tr></thead>
+    <tbody>${data.map((c,i)=>`<tr data-id="${c.id}">
+      <td style="white-space:nowrap">
+        <button class="btn ghost" data-mv="up" data-i="${i}" ${i===0?'disabled style="opacity:.35;margin-left:0"':'style="margin-left:0"'}>↑</button>
+        <button class="btn ghost" data-mv="down" data-i="${i}" ${i===data.length-1?'disabled style="opacity:.35"':''}>↓</button>
+      </td>
+      <td><input class="inp cat-name" data-id="${c.id}" value="${esc(c.name)}" style="width:100%"></td>
+      <td class="who">${esc(c.slug)}</td>
+      <td style="white-space:nowrap"><button class="btn ok" data-csave="${c.id}">Kaydet</button><button class="btn no" data-cdel="${c.id}">Sil</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+  $("c-new").onclick = newCat;
+  $("section").querySelectorAll("[data-mv]").forEach(b => b.onclick = () => { if(!b.disabled) moveCat(parseInt(b.dataset.i), b.dataset.mv); });
+  $("section").querySelectorAll("[data-csave]").forEach(b => b.onclick = () => saveCatName(b.dataset.csave));
+  $("section").querySelectorAll("[data-cdel]").forEach(b => b.onclick = () => delCat(b.dataset.cdel));
+}
+async function moveCat(i, dir){
+  const arr = categories; const j = dir==="up" ? i-1 : i+1;
+  if(j<0 || j>=arr.length) return;
+  const a = arr[i], b = arr[j];
+  await supabase.from("categories").update({ sort:b.sort }).eq("id", a.id);
+  await supabase.from("categories").update({ sort:a.sort }).eq("id", b.id);
+  toast("Sıra güncellendi ✓"); loadCats();
+}
+async function saveCatName(id){
+  const inp = $("section").querySelector(`.cat-name[data-id="${id}"]`);
+  const name = inp.value.trim(); if(!name) return toast("Ad boş olamaz");
+  const { error } = await supabase.from("categories").update({ name }).eq("id", id);
+  if(error) return toast("Kaydedilemedi: " + error.message);
+  toast("Kategori adı güncellendi ✓"); loadCats();
+}
+async function newCat(){
+  const name = prompt("Yeni tür adı (örn: Bukalemunlar):");
+  if(!name || !name.trim()) return;
+  const slug = slugify(name);
+  if(!slug) return toast("Geçersiz ad");
+  const { data:mx } = await supabase.from("categories").select("sort").order("sort",{ascending:false}).limit(1).maybeSingle();
+  const sort = (mx?.sort ?? 0) + 1;
+  const { error } = await supabase.from("categories").insert({ slug, name:name.trim(), sort });
+  if(error) return toast("Eklenemedi: " + error.message + " (aynı isim olabilir)");
+  toast("Yeni tür eklendi ✓"); loadCats();
+}
+async function delCat(id){
+  if(!confirm("Bu kategori silinecek. Bu kategorideki ilanlar 'kategorisiz' kalır. Emin misin?")) return;
+  await supabase.from("listings").update({ category_id:null }).eq("category_id", id);
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if(error) return toast("Silinemedi: " + error.message);
+  toast("Kategori silindi"); loadCats();
+}
+
+// ---- SİTE GÖRSELLERİ (kategori kutuları dinamik) ----
 async function loadAssets(){
-  const { data, error } = await supabase.from("site_assets").select("key,storage_path");
+  const { data:assets, error } = await supabase.from("site_assets").select("key,storage_path");
   if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}<br>(site_assets.sql çalıştırıldı mı?)</div></div>`;
-  const map = {}; (data||[]).forEach(a => map[a.key] = a.storage_path);
+  const map = {}; (assets||[]).forEach(a => map[a.key] = a.storage_path);
+  const { data:cats } = await supabase.from("categories").select("slug,name").order("sort");
+  const slots = [
+    { key:"hero", label:"Ana sayfa büyük görsel (hero)" },
+    { key:"logo", label:"Logo (üst bar)" },
+    { key:"banner", label:"Banner (opsiyonel)" },
+    ...(cats||[]).map(c => ({ key:"cat_"+c.slug, label:"Kategori: "+c.name }))
+  ];
   $("section").innerHTML = `<div class="sec-head"><h2>Site görselleri</h2><span class="cnt">Yüklediğin an sitede güncellenir</span></div>
-    <div class="asset-grid">${ASSET_SLOTS.map(s => {
+    <div class="asset-grid">${slots.map(s => {
       const url = siteImg(map[s.key]);
       return `<div class="asset">${url ? `<img class="prev" src="${url}">` : `<div class="prevph">görsel yok</div>`}
         <div class="al">${esc(s.label)}</div>
@@ -346,18 +398,17 @@ async function deleteAsset(key){
   toast("Görsel silindi"); loadAssets();
 }
 
-// ---- BAKIM REHBERLERİ (tam yönetim) ----
+// ---- BAKIM REHBERLERİ ----
 async function loadGuides(){
   const { data, error } = await supabase.from("guides").select("slug,name,category_slug,image_path,legal_warning,sort").order("sort");
   if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
-  window._guides = data || [];
-  $("section").innerHTML = `<div class="sec-head"><h2>Bakım rehberleri</h2>
-      <button class="btn ok" id="g-new">+ Yeni rehber</button></div>
+  const catName = {}; categories.forEach(c => catName[c.slug]=c.name);
+  $("section").innerHTML = `<div class="sec-head"><h2>Bakım rehberleri</h2><button class="btn ok" id="g-new">+ Yeni rehber</button></div>
     <div class="panel"><table><thead><tr><th></th><th>Tür</th><th>Kategori</th><th>Görsel</th><th></th></tr></thead>
-    <tbody>${(data||[]).map(g => `<tr data-slug="${esc(g.slug)}">
+    <tbody>${(data||[]).map(g => `<tr>
       <td>${g.image_path ? `<img class="thumb" src="${publicImage(g.image_path)}">` : `<div class="thumb"></div>`}</td>
       <td>${esc(g.name)} ${g.legal_warning?'<span class="tag warn">uyarı</span>':""}<div class="who">${esc(g.slug)}</div></td>
-      <td>${esc(CAT_NAMES[g.category_slug]||g.category_slug||"—")}</td>
+      <td>${esc(catName[g.category_slug]||g.category_slug||"—")}</td>
       <td>${g.image_path?'<span class="tag aktif">var</span>':'<span class="tag">yok</span>'}</td>
       <td style="white-space:nowrap"><button class="btn ghost" data-gedit="${esc(g.slug)}">Düzenle</button><button class="btn no" data-gdel="${esc(g.slug)}">Sil</button></td>
     </tr>`).join("")}</tbody></table></div>`;
@@ -365,24 +416,22 @@ async function loadGuides(){
   $("section").querySelectorAll("[data-gedit]").forEach(b => b.onclick = () => openGuide(b.dataset.gedit));
   $("section").querySelectorAll("[data-gdel]").forEach(b => b.onclick = () => delGuide(b.dataset.gdel));
 }
-
 let gEditSlug = null, gImagePath = null;
 async function openGuide(slug){
   gEditSlug = slug; gImagePath = null;
-  let g = { name:"",category_slug:"kertenkele",level:"",latin:"",lifespan:"",size:"",habitat:"",temperature:"",humidity:"",diet:"",body:[],tips:[],legal_warning:false,image_path:null };
+  let g = { name:"",category_slug:(categories[0]?.slug||"kertenkele"),level:"",latin:"",lifespan:"",size:"",habitat:"",temperature:"",humidity:"",diet:"",body:[],tips:[],legal_warning:false,image_path:null };
   if(slug){
     const { data, error } = await supabase.from("guides").select("*").eq("slug", slug).single();
     if(error) return toast("Yüklenemedi: " + error.message);
     g = data; gImagePath = data.image_path;
   }
   $("g-modal-title").textContent = slug ? "Rehberi düzenle" : "Yeni rehber ekle";
-  $("gf-name").value = g.name||""; $("gf-cat").value = g.category_slug||"kertenkele"; $("gf-level").value = g.level||"";
-  $("gf-latin").value = g.latin||""; $("gf-lifespan").value = g.lifespan||""; $("gf-size").value = g.size||"";
-  $("gf-habitat").value = g.habitat||""; $("gf-temp").value = g.temperature||""; $("gf-humidity").value = g.humidity||"";
-  $("gf-diet").value = g.diet||"";
-  $("gf-body").value = (Array.isArray(g.body)?g.body:[]).join("\n");
-  $("gf-tips").value = (Array.isArray(g.tips)?g.tips:[]).join("\n");
-  $("gf-warn").checked = !!g.legal_warning;
+  $("gf-name").value=g.name||""; $("gf-cat").value=g.category_slug||(categories[0]?.slug||""); $("gf-level").value=g.level||"";
+  $("gf-latin").value=g.latin||""; $("gf-lifespan").value=g.lifespan||""; $("gf-size").value=g.size||"";
+  $("gf-habitat").value=g.habitat||""; $("gf-temp").value=g.temperature||""; $("gf-humidity").value=g.humidity||""; $("gf-diet").value=g.diet||"";
+  $("gf-body").value=(Array.isArray(g.body)?g.body:[]).join("\n");
+  $("gf-tips").value=(Array.isArray(g.tips)?g.tips:[]).join("\n");
+  $("gf-warn").checked=!!g.legal_warning;
   drawGuidePrev();
   $("guide-overlay").classList.add("open");
 }
@@ -406,19 +455,16 @@ $("gf-save").onclick = async () => {
   const name = $("gf-name").value.trim();
   if(!name) return toast("Tür adı zorunlu.");
   const row = {
-    name, category_slug: $("gf-cat").value, level: $("gf-level").value.trim()||null,
-    latin: $("gf-latin").value.trim()||null, lifespan: $("gf-lifespan").value.trim()||null,
-    size: $("gf-size").value.trim()||null, habitat: $("gf-habitat").value.trim()||null,
-    temperature: $("gf-temp").value.trim()||null, humidity: $("gf-humidity").value.trim()||null,
-    diet: $("gf-diet").value.trim()||null, body: lines($("gf-body").value), tips: lines($("gf-tips").value),
-    legal_warning: $("gf-warn").checked, image_path: gImagePath
+    name, category_slug:$("gf-cat").value, level:$("gf-level").value.trim()||null, latin:$("gf-latin").value.trim()||null,
+    lifespan:$("gf-lifespan").value.trim()||null, size:$("gf-size").value.trim()||null, habitat:$("gf-habitat").value.trim()||null,
+    temperature:$("gf-temp").value.trim()||null, humidity:$("gf-humidity").value.trim()||null, diet:$("gf-diet").value.trim()||null,
+    body:lines($("gf-body").value), tips:lines($("gf-tips").value), legal_warning:$("gf-warn").checked, image_path:gImagePath
   };
   let error;
-  if(gEditSlug){
-    ({ error } = await supabase.from("guides").update(row).eq("slug", gEditSlug));
-  } else {
+  if(gEditSlug){ ({ error } = await supabase.from("guides").update(row).eq("slug", gEditSlug)); }
+  else {
     row.slug = slugify(name) || ("rehber-" + Date.now());
-    const { data:mx } = await supabase.from("guides").select("sort").order("sort",{ascending:false}).limit(1).single();
+    const { data:mx } = await supabase.from("guides").select("sort").order("sort",{ascending:false}).limit(1).maybeSingle();
     row.sort = (mx?.sort ?? 0) + 1;
     ({ error } = await supabase.from("guides").insert(row));
   }

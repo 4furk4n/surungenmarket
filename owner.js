@@ -1,8 +1,9 @@
 // ============================================================================
 // owner.js  (kök seviyede ek modül)
-//   1) Site görsellerini Supabase'den çeker + tarayıcıda önbellekler (flash yok)
-//   2) "İlanlarım": kullanıcının kendi ilanlarını düzenleme / silme
-//   3) İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
+//   1) Site görsellerini Supabase'den çeker + önbellekler (flash yok)
+//   2) Üst menüyü (kategoriler) veritabanından dinamik oluşturur
+//   3) "İlanlarım": kullanıcının kendi ilanlarını düzenleme / silme
+//   4) İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
 // ============================================================================
 import { supabase, publicImage } from "./js/supabase.js";
 
@@ -15,15 +16,15 @@ let categories = [];
 let currentUid = null;
 let phoneVerified = false;
 
-// site görsellerini mümkün olan en erken anda uygula (önbellekten)
-applyMap(readCache());
+applyMap(readCache());   // görselleri en erken anda uygula
 
 boot();
 async function boot() {
-  await refreshAssets();           // Supabase'den taze çek + önbelleğe yaz
+  await refreshAssets();
   await refresh();
   const { data:cats } = await supabase.from("categories").select("id,slug,name").order("sort");
   categories = cats || [];
+  buildNav(categories);
   injectButton();
   supabase.auth.onAuthStateChange(async () => { await refresh(); injectButton(); });
 }
@@ -34,52 +35,54 @@ async function refresh() {
 }
 
 // ---------------------------------------------------------------------------
-// 1) Site görselleri — önbellekli uygulama (flash'ı önler)
+// Üst menüyü kategorilere göre yeniden kur (rename/sıra/yeni tür yansır)
+// ---------------------------------------------------------------------------
+function buildNav(cats) {
+  const ul = document.getElementById("nav");
+  if (!ul || !cats.length) return;
+  ul.innerHTML =
+    `<li><a href="#" data-cat="">İlanlar</a></li>` +
+    cats.map(c => `<li><a href="#" data-cat="${esc(c.slug)}">${esc(c.name)}</a></li>`).join("") +
+    `<li><a href="#" data-page="rehberler">Bakım rehberleri</a></li>` +
+    `<li><a href="#" data-page="hakkinda">Hakkında</a></li>`;
+  // Not: app.js body üzerinde click dinlediği için yeni linkler otomatik çalışır.
+}
+
+// ---------------------------------------------------------------------------
+// Site görselleri — önbellekli uygulama
 // ---------------------------------------------------------------------------
 const CACHE_KEY = "sm_site_assets_v1";
 function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch { return {}; } }
 function writeCache(map) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(map)); } catch {} }
-
 async function refreshAssets() {
   try {
     const { data } = await supabase.from("site_assets").select("key,storage_path");
     const map = {};
     (data || []).forEach(a => { if (a.storage_path) map[a.key] = siteImg(a.storage_path); });
-    writeCache(map);
-    applyMap(map);
-  } catch (e) { /* tablo yoksa sessiz geç */ }
+    writeCache(map); applyMap(map);
+  } catch (e) {}
 }
-
 function applyMap(map) {
   if (!map) return;
-  // Hero
   if (map.hero) {
     const img = document.querySelector(".hero-img img");
-    if (img && img.src !== map.hero) {
-      img.src = map.hero; img.style.display = "block";
-      const ph = img.nextElementSibling; if (ph) ph.style.display = "none";
-    }
+    if (img && img.src !== map.hero) { img.src = map.hero; img.style.display = "block"; const ph = img.nextElementSibling; if (ph) ph.style.display = "none"; }
   }
-  // Logo (özel logo yüklendiyse SVG'yi resimle değiştir / güncelle)
   if (map.logo) {
     const holder = document.getElementById("logo");
     if (holder) {
       let im = holder.querySelector("img.logo-img");
       if (!im) {
         const svg = holder.querySelector(".logo-svg");
-        im = document.createElement("img");
-        im.className = "logo-img";
-        im.alt = "SürüngenMarket";
+        im = document.createElement("img"); im.className = "logo-img"; im.alt = "SürüngenMarket";
         im.style.cssText = "width:40px;height:40px;object-fit:contain;border-radius:8px;flex-shrink:0;";
         if (svg) svg.replaceWith(im); else holder.insertBefore(im, holder.firstChild);
       }
       if (im.src !== map.logo) im.src = map.logo;
     }
   }
-  // Kategori kartları
   applyCats(map);
 }
-
 function applyCats(map) {
   const cats = document.getElementById("cats");
   if (!cats) return;
@@ -99,7 +102,7 @@ function applyCats(map) {
 }
 
 // ---------------------------------------------------------------------------
-// 2) "İlanlarım" + düzenle/sil
+// "İlanlarım" + düzenle/sil
 // ---------------------------------------------------------------------------
 function injectButton() {
   const holder = document.getElementById("auth-in");
@@ -206,7 +209,7 @@ function openEdit(l) {
 }
 
 // ---------------------------------------------------------------------------
-// 3) İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
+// İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
 // ---------------------------------------------------------------------------
 document.addEventListener("click", e => {
   const b = e.target.closest && e.target.closest("#btn-new");
@@ -216,7 +219,6 @@ document.addEventListener("click", e => {
   e.stopImmediatePropagation(); e.preventDefault();
   openPhoneVerify();
 }, true);
-
 function toE164(raw) {
   let d = (raw || "").replace(/[^\d]/g, "");
   if (d.startsWith("90")) d = d.slice(2);
