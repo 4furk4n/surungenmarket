@@ -1,24 +1,41 @@
 /* ============================================================
-   Yerleşim iyileştirmeleri — yan boşlukları daraltır.
-   (Yazı boyutları DEĞİŞMEZ; sadece içerik alanı genişler.)
-   styles.css'ten SONRA yüklenir, o yüzden onu geçersiz kılar.
+   Ölçek / oturuş iyileştirmeleri (MorphMarket ölçeği referans).
+   Tasarım, renk, yazı boyutları AYNI kalır — sadece genişlik ve
+   yerleşim oranları düzeltilir. styles.css'ten SONRA yüklenir.
    ============================================================ */
 
-.topbar, nav ul, .hero-inner, .section, .trust-inner, .foot-inner, .legal p, #detail {
-  max-width: 1560px !important;
+/* 1) Üst bar ve menü baştan sona (tam genişlik) uzansın */
+header .topbar { max-width: none !important; padding-left: 44px !important; padding-right: 44px !important; }
+header nav ul  { max-width: none !important; padding-left: 44px !important; padding-right: 44px !important; }
+
+/* 2) İçerik alanı: geniş ekranda oturaklı, dengeli bir genişlik */
+.hero-inner, .section, .trust-inner, .foot-inner, .legal p, #detail {
+  max-width: 1600px !important;
+  padding-left: 44px !important;
+  padding-right: 44px !important;
 }
 
-/* Kategori ve ilan kartları geniş ekranda daha çok sığsın (boşluklar otursun) */
-.cats { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; }
-.grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important; }
+/* 3) Kategori kartları temiz bir sıra halinde otursun (kare-benzeri) */
+.cats { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important; gap: 18px !important; }
+.cat .thumb { border-radius: 10px !important; }
+.cat .thumb img, .cat .thumb > div { height: 170px !important; }
 
-/* Hero'nun boş görsel kutusu biraz küçülsün, sağa yaslanınca dengeli dursun */
-.hero-inner { gap: 56px !important; padding-top: 56px !important; padding-bottom: 56px !important; }
-.hero-img { width: 42% !important; }
+/* 4) İlan kartları da dengeli sığsın */
+.grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important; gap: 18px !important; }
 
-/* Bölümler arası dikey boşluk biraz otursun */
-.section { padding-top: 46px !important; }
+/* 5) Hero oranı: metin solda, görsel/placeholder sağda dengeli */
+.hero-inner { gap: 48px !important; padding-top: 60px !important; padding-bottom: 60px !important; align-items: center !important; }
+.hero-img { width: 44% !important; max-width: 620px !important; }
+.hero-img img, .hero-img > div { height: 340px !important; }
+
+/* 6) Hero arka planı düz siyah (gradyan yok).
+      Sağdaki gri kutu ve "Görsel yakında" yazısı KORUNUR — oraya görsel eklenecek. */
+.hero { background: #0c0c0e !important; }
 
 @media (max-width: 900px) {
+  header .topbar, header nav ul,
+  .hero-inner, .section, .trust-inner, .foot-inner, .legal p, #detail {
+    padding-left: 16px !important; padding-right: 16px !important;
+  }
   .hero-img { width: 100% !important; }
 }
