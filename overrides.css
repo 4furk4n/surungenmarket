@@ -28,9 +28,9 @@ header nav ul  { max-width: none !important; padding-left: 44px !important; padd
 .hero-img { width: 44% !important; max-width: 620px !important; }
 .hero-img img, .hero-img > div { height: 340px !important; }
 
-/* 6) Zemin tam siyah (düz). Header + gövde + hero pürüzsüz siyah olur.
-      Gri görsel kutuları ("Görsel yakında") KORUNUR — oraya görsel eklenecek. */
-body, header, .hero, #home, .section { background: #000 !important; }
+/* 6) YALNIZCA hero alanı düz siyah. Gerisi (header, gövde, kategoriler) eski renginde kalır.
+      Gri "Görsel yakında" kutusu korunur — oraya görsel eklenecek. */
+.hero { background: #000 !important; }
 
 @media (max-width: 900px) {
   header .topbar, header nav ul,
