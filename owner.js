@@ -1,6 +1,6 @@
 // ============================================================================
 // owner.js  (kök seviyede ek modül)
-//   1) Site görsellerini Supabase'den çekip uygular (hero, logo, kategoriler)
+//   1) Site görsellerini Supabase'den çeker + tarayıcıda önbellekler (flash yok)
 //   2) "İlanlarım": kullanıcının kendi ilanlarını düzenleme / silme
 //   3) İlan vermeden önce ZORUNLU telefon (SMS) doğrulaması
 // ============================================================================
@@ -15,9 +15,12 @@ let categories = [];
 let currentUid = null;
 let phoneVerified = false;
 
+// site görsellerini mümkün olan en erken anda uygula (önbellekten)
+applyMap(readCache());
+
 boot();
 async function boot() {
-  applySiteAssets();               // görseller (giriş gerektirmez)
+  await refreshAssets();           // Supabase'den taze çek + önbelleğe yaz
   await refresh();
   const { data:cats } = await supabase.from("categories").select("id,slug,name").order("sort");
   categories = cats || [];
@@ -31,33 +34,52 @@ async function refresh() {
 }
 
 // ---------------------------------------------------------------------------
-// 1) Site görsellerini uygula (admin panelinden yüklenenler)
+// 1) Site görselleri — önbellekli uygulama (flash'ı önler)
 // ---------------------------------------------------------------------------
-async function applySiteAssets() {
-  let map = {};
+const CACHE_KEY = "sm_site_assets_v1";
+function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch { return {}; } }
+function writeCache(map) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(map)); } catch {} }
+
+async function refreshAssets() {
   try {
     const { data } = await supabase.from("site_assets").select("key,storage_path");
+    const map = {};
     (data || []).forEach(a => { if (a.storage_path) map[a.key] = siteImg(a.storage_path); });
-  } catch (e) { return; }
+    writeCache(map);
+    applyMap(map);
+  } catch (e) { /* tablo yoksa sessiz geç */ }
+}
 
-  // Hero görseli
+function applyMap(map) {
+  if (!map) return;
+  // Hero
   if (map.hero) {
     const img = document.querySelector(".hero-img img");
-    if (img) { img.src = map.hero; img.style.display = "block"; const ph = img.nextElementSibling; if (ph) ph.style.display = "none"; }
-  }
-  // Logo (varsa SVG'yi resimle değiştir)
-  if (map.logo) {
-    const svg = document.querySelector("#logo .logo-svg");
-    if (svg) {
-      const im = document.createElement("img");
-      im.src = map.logo; im.alt = "SürüngenMarket";
-      im.style.cssText = "width:40px;height:40px;object-fit:contain;border-radius:8px;flex-shrink:0;";
-      svg.replaceWith(im);
+    if (img && img.src !== map.hero) {
+      img.src = map.hero; img.style.display = "block";
+      const ph = img.nextElementSibling; if (ph) ph.style.display = "none";
     }
   }
-  // Kategori kartları (app.js #cats'i asenkron doldurduğu için gözlemle)
+  // Logo (özel logo yüklendiyse SVG'yi resimle değiştir / güncelle)
+  if (map.logo) {
+    const holder = document.getElementById("logo");
+    if (holder) {
+      let im = holder.querySelector("img.logo-img");
+      if (!im) {
+        const svg = holder.querySelector(".logo-svg");
+        im = document.createElement("img");
+        im.className = "logo-img";
+        im.alt = "SürüngenMarket";
+        im.style.cssText = "width:40px;height:40px;object-fit:contain;border-radius:8px;flex-shrink:0;";
+        if (svg) svg.replaceWith(im); else holder.insertBefore(im, holder.firstChild);
+      }
+      if (im.src !== map.logo) im.src = map.logo;
+    }
+  }
+  // Kategori kartları
   applyCats(map);
 }
+
 function applyCats(map) {
   const cats = document.getElementById("cats");
   if (!cats) return;
@@ -65,21 +87,19 @@ function applyCats(map) {
     cats.querySelectorAll(".cat").forEach(c => {
       const slug = c.getAttribute("data-cat");
       const url = map["cat_" + slug];
-      if (url) {
-        const thumb = c.querySelector(".thumb");
-        if (thumb && !thumb.dataset.done) {
-          thumb.dataset.done = "1";
-          thumb.innerHTML = `<img src="${url}" alt="" style="width:100%;height:170px;object-fit:cover;display:block;">`;
-        }
+      const thumb = c.querySelector(".thumb");
+      if (url && thumb && thumb.dataset.url !== url) {
+        thumb.dataset.url = url;
+        thumb.innerHTML = `<img src="${url}" alt="" style="width:100%;height:170px;object-fit:cover;display:block;">`;
       }
     });
   };
   doIt();
-  new MutationObserver(doIt).observe(cats, { childList: true });
+  if (!cats._obs) { cats._obs = new MutationObserver(doIt); cats._obs.observe(cats, { childList: true }); }
 }
 
 // ---------------------------------------------------------------------------
-// 2) "İlanlarım" butonu + düzenle/sil
+// 2) "İlanlarım" + düzenle/sil
 // ---------------------------------------------------------------------------
 function injectButton() {
   const holder = document.getElementById("auth-in");
