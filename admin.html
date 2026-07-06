@@ -27,8 +27,8 @@
   .sub { color:var(--muted); font-size:13.5px; margin-bottom:26px; }
   .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:30px; }
   .stat { background:var(--bg-2); border:1px solid var(--border); border-radius:14px; padding:18px 20px; position:relative; overflow:hidden; }
-  .stat::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent,#fff); }
-  .stat.a::before { background:#fff; } .stat.b::before { background:var(--amber); } .stat.c::before { background:var(--blue); } .stat.d::before { background:var(--red); }
+  .stat::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:#fff; }
+  .stat.b::before { background:var(--amber); } .stat.c::before { background:var(--blue); } .stat.d::before { background:var(--red); }
   .stat .l { font-size:12.5px; color:var(--muted); margin-bottom:8px; }
   .stat .v { font-size:28px; font-weight:800; letter-spacing:-.5px; }
   .sec-head { display:flex; align-items:center; justify-content:space-between; margin:26px 0 14px; }
@@ -39,7 +39,7 @@
   th { text-align:left; padding:13px 16px; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); font-weight:600; }
   td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
-  tbody tr { transition:background .15s; } tbody tr:hover { background:var(--bg-3); }
+  tbody tr:hover { background:var(--bg-3); }
   .thumb { width:54px; height:42px; border-radius:8px; object-fit:cover; background:var(--bg-3); }
   .who { font-size:12px; color:var(--muted); margin-top:2px; }
   .tag { font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap; }
@@ -53,20 +53,27 @@
   .ghost { background:transparent; color:#fff; border:1px solid var(--border-2); margin-left:6px; }
   .no { background:transparent; color:var(--red); border:1px solid rgba(255,107,107,.4); margin-left:6px; }
   .empty { padding:28px 16px; text-align:center; color:var(--muted); font-size:14px; }
-  .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-3); border:1px solid var(--border-2); border-left:3px solid var(--green); padding:12px 18px; border-radius:10px; font-size:13.5px; display:none; z-index:60; }
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-3); border:1px solid var(--border-2); border-left:3px solid var(--green); padding:12px 18px; border-radius:10px; font-size:13.5px; display:none; z-index:60; max-width:340px; }
   /* modal */
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.72); display:none; align-items:flex-start; justify-content:center; z-index:120; padding:40px 16px; overflow-y:auto; }
   .overlay.open { display:flex; }
-  .modal { background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; width:100%; max-width:520px; padding:26px 26px 22px; }
+  .modal { background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; width:100%; max-width:520px; padding:26px; }
   .modal h2 { font-size:19px; font-weight:700; margin-bottom:16px; }
   .fgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  .field { display:flex; flex-direction:column; gap:6px; }
-  .field.full { grid-column:1/-1; }
+  .field { display:flex; flex-direction:column; gap:6px; } .field.full { grid-column:1/-1; }
   .field label { font-size:12.5px; font-weight:600; color:var(--muted); }
   .field input, .field select, .field textarea { padding:10px 12px; border:1px solid var(--border-2); border-radius:9px; background:var(--bg); color:#fff; font-size:14px; outline:none; font-family:inherit; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color:#fff; }
   .mactions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
   .cancel { background:var(--bg-3); color:var(--text); }
+  /* görsel kartları */
+  .asset-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  .asset { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:14px; }
+  .asset .prev { width:100%; height:130px; border-radius:8px; background:var(--bg-3); object-fit:cover; display:block; }
+  .asset .prevph { width:100%; height:130px; border-radius:8px; background:var(--bg-3); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px; }
+  .asset .al { font-size:13px; font-weight:600; margin:11px 0 9px; }
+  .asset .row2 { display:flex; gap:8px; }
+  .asset label.upl { cursor:pointer; }
   /* giriş kapısı */
   #gate { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; z-index:200; }
   .gate-box { width:100%; max-width:380px; background:var(--bg-2); border:1px solid var(--border-2); border-radius:16px; padding:34px 28px; text-align:center; }
@@ -101,6 +108,8 @@
       <a class="navitem" data-sec="overview">📊 Genel bakış</a>
       <a class="navitem" data-sec="pending">📥 İlan onayları <span class="n hidden" id="pn"></span></a>
       <a class="navitem" data-sec="active">📢 Aktif ilanlar</a>
+      <a class="navitem" data-sec="assets">🖼️ Site görselleri</a>
+      <a class="navitem" data-sec="guideimg">📚 Rehber görselleri</a>
       <a class="navitem" data-sec="reports">🚩 Şikayetler <span class="n hidden" id="rn"></span></a>
       <a class="navitem" data-sec="users">👥 Kullanıcılar</a>
       <div class="navsep"></div>
@@ -117,7 +126,7 @@
   </main>
 </div>
 
-<!-- Düzenleme modalı -->
+<!-- İlan düzenleme modalı -->
 <div class="overlay" id="edit-overlay">
   <div class="modal">
     <h2>İlanı düzenle</h2>
@@ -146,7 +155,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const tl = n => Number(n).toLocaleString("tr-TR") + " ₺";
 const timeStr = iso => new Date(iso).toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-function toast(m){ const t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none",2600); }
+const siteImg = p => p ? supabase.storage.from("site-assets").getPublicUrl(p).data.publicUrl : null;
+function toast(m){ const t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none",3000); }
 
 let me = null, categories = [], curSec = "pending";
 
@@ -170,11 +180,9 @@ function showGate(msg, loggedIn){
 }
 async function unlock(){
   $("gate").classList.add("hidden"); $("panel").classList.remove("hidden");
-  $("me-name").textContent = me.username;
-  $("sec-sub").textContent = "Hoş geldin " + me.username;
+  $("me-name").textContent = me.username; $("sec-sub").textContent = "Hoş geldin " + me.username;
   await loadStats(); showSection("pending");
 }
-
 $("g-login").onclick = doLogin;
 $("g-pass").addEventListener("keydown", e => e.key === "Enter" && doLogin());
 async function doLogin(){
@@ -194,7 +202,7 @@ async function loadStats(){
   $("stats-wrap").innerHTML = `
     <div class="stat c"><div class="l">Yayındaki ilan</div><div class="v">${active.count ?? 0}</div></div>
     <div class="stat b"><div class="l">Onay bekleyen</div><div class="v">${pending.count ?? 0}</div></div>
-    <div class="stat a"><div class="l">Kayıtlı kullanıcı</div><div class="v">${users.count ?? 0}</div></div>
+    <div class="stat"><div class="l">Kayıtlı kullanıcı</div><div class="v">${users.count ?? 0}</div></div>
     <div class="stat d"><div class="l">Açık şikayet</div><div class="v">${reports.count ?? 0}</div></div>`;
   setBadge("pn", pending.count); setBadge("rn", reports.count);
 }
@@ -204,11 +212,13 @@ document.querySelectorAll("[data-sec]").forEach(a => a.onclick = () => showSecti
 function showSection(sec){
   curSec = sec;
   document.querySelectorAll("[data-sec]").forEach(a => a.classList.toggle("active", a.dataset.sec === sec));
-  const titles = { overview:"Genel bakış", pending:"İlan onayları", active:"Aktif ilanlar", reports:"Şikayetler", users:"Kullanıcılar" };
+  const titles = { overview:"Genel bakış", pending:"İlan onayları", active:"Aktif ilanlar", assets:"Site görselleri", guideimg:"Rehber görselleri", reports:"Şikayetler", users:"Kullanıcılar" };
   $("sec-title").textContent = titles[sec] || "";
   $("stats-wrap").style.display = (sec === "overview" || sec === "pending") ? "grid" : "none";
   if(sec === "overview" || sec === "pending") loadPending();
   else if(sec === "active") loadActive();
+  else if(sec === "assets") loadAssets();
+  else if(sec === "guideimg") loadGuideImages();
   else if(sec === "reports") loadReports();
   else if(sec === "users") loadUsers();
 }
@@ -233,11 +243,11 @@ async function loadPending(){
     </tr>`).join("")}</tbody></table></div>`;
   bindRowButtons(async (id, a, btn) => {
     const status = a==="approve"?"active":"removed";
-    if(await update(id,{status},btn)){ removeRow(btn); toast(a==="approve"?"İlan onaylandı ve yayına alındı ✓":"İlan reddedildi"); await loadStats(); }
+    if(await update(id,{status},btn)){ removeRow(btn); toast(a==="approve"?"İlan onaylandı ✓":"İlan reddedildi"); await loadStats(); }
   });
 }
 
-// ---- aktif ilanlar (düzenle / sil) ----
+// ---- aktif ilanlar ----
 async function loadActive(){
   const { data, error } = await supabase.from("listings").select(LISTING_SELECT).eq("status","active").order("created_at",{ascending:false});
   if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
@@ -254,8 +264,7 @@ async function loadActive(){
     </tr>`).join("")}</tbody></table></div>`;
   bindRowButtons(async (id, a, btn) => {
     if(a==="edit") return openEdit(window._active[id]);
-    if(a==="del"){
-      if(!confirm("Bu ilan kalıcı olarak silinecek. Emin misin?")) return;
+    if(a==="del"){ if(!confirm("Bu ilan kalıcı olarak silinecek. Emin misin?")) return;
       const { error } = await supabase.from("listings").delete().eq("id", id);
       if(error) return toast("Silinemedi: " + error.message);
       removeRow(btn); toast("İlan silindi"); await loadStats();
@@ -263,39 +272,115 @@ async function loadActive(){
   });
 }
 
-// ---- düzenleme modalı ----
+// ---- SİTE GÖRSELLERİ ----
+const ASSET_SLOTS = [
+  { key:"hero",   label:"Ana sayfa büyük görsel (hero)" },
+  { key:"logo",   label:"Logo (üst bar)" },
+  { key:"banner", label:"Banner (opsiyonel)" },
+  { key:"cat_yilan",      label:"Kategori: Yılanlar" },
+  { key:"cat_kertenkele", label:"Kategori: Kertenkeleler & geckolar" },
+  { key:"cat_kaplumbaga", label:"Kategori: Kaplumbağalar" },
+  { key:"cat_amfibi",     label:"Kategori: Amfibiler" },
+  { key:"cat_eklem",      label:"Kategori: Eklem bacaklılar" },
+  { key:"cat_memeli",     label:"Kategori: Egzotik memeliler" },
+  { key:"cat_kus",        label:"Kategori: Egzotik kuşlar" },
+];
+async function loadAssets(){
+  const { data, error } = await supabase.from("site_assets").select("key,storage_path");
+  if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}<br>(site_assets.sql çalıştırıldı mı?)</div></div>`;
+  const map = {}; (data||[]).forEach(a => map[a.key] = a.storage_path);
+  $("section").innerHTML = `<div class="sec-head"><h2>Site görselleri</h2><span class="cnt">Yüklediğin an sitede güncellenir</span></div>
+    <div class="asset-grid">${ASSET_SLOTS.map(s => {
+      const url = siteImg(map[s.key]);
+      return `<div class="asset">
+        ${url ? `<img class="prev" src="${url}">` : `<div class="prevph">görsel yok</div>`}
+        <div class="al">${esc(s.label)}</div>
+        <div class="row2">
+          <label class="btn ok upl">Yükle<input type="file" accept="image/*" hidden data-up="${s.key}"></label>
+          ${map[s.key] ? `<button class="btn no" data-delasset="${s.key}">Sil</button>` : ""}
+        </div>
+      </div>`;
+    }).join("")}</div>`;
+  $("section").querySelectorAll("[data-up]").forEach(inp => inp.onchange = e => uploadAsset(inp.dataset.up, e.target.files[0]));
+  $("section").querySelectorAll("[data-delasset]").forEach(b => b.onclick = () => deleteAsset(b.dataset.delasset));
+}
+async function uploadAsset(key, file){
+  if(!file) return;
+  toast("Yükleniyor…");
+  const ext = (file.name.split(".").pop()||"jpg").toLowerCase();
+  const path = `${key}/${Date.now()}.${ext}`;
+  const { error:up } = await supabase.storage.from("site-assets").upload(path, file, { upsert:true, cacheControl:"3600" });
+  if(up) return toast("Yüklenemedi: " + up.message);
+  const { error } = await supabase.from("site_assets").upsert({ key, storage_path:path, updated_at:new Date().toISOString() });
+  if(error) return toast("Kaydedilemedi: " + error.message);
+  toast("Görsel güncellendi ✓ Sitede otomatik değişti.");
+  loadAssets();
+}
+async function deleteAsset(key){
+  if(!confirm("Bu görsel kaldırılacak. Emin misin?")) return;
+  const { data } = await supabase.from("site_assets").select("storage_path").eq("key", key).single();
+  if(data?.storage_path) await supabase.storage.from("site-assets").remove([data.storage_path]);
+  await supabase.from("site_assets").delete().eq("key", key);
+  toast("Görsel silindi"); loadAssets();
+}
+
+// ---- REHBER GÖRSELLERİ ----
+async function loadGuideImages(){
+  const { data, error } = await supabase.from("guides").select("slug,name,image_path,category_slug").order("sort");
+  if(error) return $("section").innerHTML = `<div class="panel"><div class="empty">Yüklenemedi: ${esc(error.message)}</div></div>`;
+  $("section").innerHTML = `<div class="sec-head"><h2>Rehber görselleri</h2><span class="cnt">${data.length} tür</span></div>
+    <div class="asset-grid">${data.map(g => {
+      const url = g.image_path ? publicImage(g.image_path) : null;
+      return `<div class="asset">
+        ${url ? `<img class="prev" src="${url}">` : `<div class="prevph">görsel yok</div>`}
+        <div class="al">${esc(g.name)}</div>
+        <div class="row2">
+          <label class="btn ok upl">Yükle<input type="file" accept="image/*" hidden data-gup="${g.slug}"></label>
+          ${g.image_path ? `<button class="btn no" data-gdel="${g.slug}">Sil</button>` : ""}
+        </div>
+      </div>`;
+    }).join("")}</div>`;
+  $("section").querySelectorAll("[data-gup]").forEach(inp => inp.onchange = e => uploadGuideImg(inp.dataset.gup, e.target.files[0]));
+  $("section").querySelectorAll("[data-gdel]").forEach(b => b.onclick = () => deleteGuideImg(b.dataset.gdel));
+}
+async function uploadGuideImg(slug, file){
+  if(!file) return;
+  toast("Yükleniyor…");
+  const ext = (file.name.split(".").pop()||"jpg").toLowerCase();
+  const path = `${me.id}/guides/${slug}-${Date.now()}.${ext}`;
+  const { error:up } = await supabase.storage.from("listing-images").upload(path, file, { upsert:true, cacheControl:"3600" });
+  if(up) return toast("Yüklenemedi: " + up.message);
+  const { error } = await supabase.from("guides").update({ image_path:path }).eq("slug", slug);
+  if(error) return toast("Kaydedilemedi: " + error.message);
+  toast("Rehber görseli güncellendi ✓"); loadGuideImages();
+}
+async function deleteGuideImg(slug){
+  if(!confirm("Bu rehberin görseli kaldırılacak.")) return;
+  const { data } = await supabase.from("guides").select("image_path").eq("slug", slug).single();
+  if(data?.image_path) await supabase.storage.from("listing-images").remove([data.image_path]);
+  await supabase.from("guides").update({ image_path:null }).eq("slug", slug);
+  toast("Görsel silindi"); loadGuideImages();
+}
+
+// ---- İlan düzenleme modalı ----
 let editId = null;
 function openEdit(l){
   editId = l.id;
-  $("e-title").value = l.title || "";
-  $("e-cat").value = l.category_id || (categories[0]?.id ?? "");
-  $("e-status").value = l.status || "active";
-  $("e-price").value = l.price ?? 0;
-  $("e-city").value = l.city || "";
-  $("e-sex").value = l.sex || "x";
-  $("e-age").value = l.age_text || "";
-  $("e-desc").value = l.description || "";
+  $("e-title").value=l.title||""; $("e-cat").value=l.category_id||(categories[0]?.id??"");
+  $("e-status").value=l.status||"active"; $("e-price").value=l.price??0; $("e-city").value=l.city||"";
+  $("e-sex").value=l.sex||"x"; $("e-age").value=l.age_text||""; $("e-desc").value=l.description||"";
   $("edit-overlay").classList.add("open");
 }
 $("e-cancel").onclick = () => $("edit-overlay").classList.remove("open");
-$("edit-overlay").addEventListener("click", e => { if(e.target.id === "edit-overlay") $("edit-overlay").classList.remove("open"); });
+$("edit-overlay").addEventListener("click", e => { if(e.target.id==="edit-overlay") $("edit-overlay").classList.remove("open"); });
 $("e-save").onclick = async () => {
-  const patch = {
-    title: $("e-title").value.trim(),
-    category_id: parseInt($("e-cat").value) || null,
-    status: $("e-status").value,
-    price: parseInt($("e-price").value) || 0,
-    city: $("e-city").value.trim() || null,
-    sex: $("e-sex").value,
-    age_text: $("e-age").value.trim() || null,
-    description: $("e-desc").value.trim() || null
-  };
+  const patch = { title:$("e-title").value.trim(), category_id:parseInt($("e-cat").value)||null, status:$("e-status").value,
+    price:parseInt($("e-price").value)||0, city:$("e-city").value.trim()||null, sex:$("e-sex").value,
+    age_text:$("e-age").value.trim()||null, description:$("e-desc").value.trim()||null };
   const { error } = await supabase.from("listings").update(patch).eq("id", editId);
   if(error) return toast("Kaydedilemedi: " + error.message);
-  $("edit-overlay").classList.remove("open");
-  toast("İlan güncellendi ✓");
-  await loadStats();
-  if(curSec === "active") loadActive();
+  $("edit-overlay").classList.remove("open"); toast("İlan güncellendi ✓"); await loadStats();
+  if(curSec==="active") loadActive();
 };
 
 // ---- şikayetler ----
@@ -329,17 +414,10 @@ async function loadUsers(){
       <td>${u.role==="admin"?'<span class="tag sahiplendirme">admin</span>':"üye"}</td><td>${timeStr(u.created_at)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
-// ---- ortak yardımcılar ----
-function bindRowButtons(handler){
-  $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => handler(b.closest("tr").dataset.id, b.dataset.a, b));
-}
-async function update(id, patch, btn){
-  if(btn) btn.disabled = true;
-  const { error } = await supabase.from("listings").update(patch).eq("id", id);
-  if(error){ toast("İşlem başarısız: " + error.message); if(btn) btn.disabled=false; return false; }
-  return true;
-}
-function removeRow(btn){ const tr = btn.closest("tr"); tr.style.transition="opacity .25s"; tr.style.opacity="0"; setTimeout(()=>tr.remove(),250); }
+// ---- ortak ----
+function bindRowButtons(handler){ $("section").querySelectorAll("button[data-a]").forEach(b => b.onclick = () => handler(b.closest("tr").dataset.id, b.dataset.a, b)); }
+async function update(id, patch, btn){ if(btn) btn.disabled=true; const { error }=await supabase.from("listings").update(patch).eq("id",id); if(error){ toast("İşlem başarısız: "+error.message); if(btn) btn.disabled=false; return false; } return true; }
+function removeRow(btn){ const tr=btn.closest("tr"); tr.style.transition="opacity .25s"; tr.style.opacity="0"; setTimeout(()=>tr.remove(),250); }
 </script>
 </body>
 </html>

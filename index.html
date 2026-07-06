@@ -89,7 +89,10 @@
           <button class="btn btn-ghost" id="hero-register">Hesap oluştur</button>
         </div>
       </div>
-      <div class="hero-img"><div style="width:100%;height:360px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;">Görsel yakında</div></div>
+      <div class="hero-img">
+        <img src="hero.jpg" alt="Leopar gecko" style="width:100%;height:360px;object-fit:cover;border-radius:18px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div style="width:100%;height:360px;background:var(--bg-3);display:none;align-items:center;justify-content:center;color:var(--muted);font-size:14px;border-radius:18px;">Görsel yakında</div>
+      </div>
     </div>
   </section>
 
