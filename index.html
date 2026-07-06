@@ -26,6 +26,18 @@
 </script>
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="overrides.css">
+<script>
+/* Önbellekteki site görselleri için: özel logo/hero varsa varsayılanları
+   daha çizilmeden gizle (yükleme anında eski logo/placeholder flash'ını önler). */
+(function(){try{
+  var m = JSON.parse(localStorage.getItem('sm_site_assets_v1')||'{}');
+  var css='';
+  if(m.logo) css += '#logo .logo-svg{display:none!important}';
+  if(m.hero) css += '.hero-img .hero-ph{display:none!important}';
+  if(css){ var s=document.createElement('style'); s.textContent=css; document.head.appendChild(s); }
+  window.__smAssets = m;
+}catch(e){}})();
+</script>
 </head>
 <body>
 
@@ -49,6 +61,10 @@
       </svg>
       <div>Sürüngen<span>Market</span></div>
     </div>
+    <script>
+    /* Önbellekte özel logo varsa SVG'yi anında resimle değiştir */
+    (function(){try{var m=window.__smAssets||{};if(m.logo){var l=document.getElementById('logo');var svg=l.querySelector('.logo-svg');var im=document.createElement('img');im.className='logo-img';im.src=m.logo;im.alt='SürüngenMarket';im.style.cssText='width:40px;height:40px;object-fit:contain;border-radius:8px;flex-shrink:0;';if(svg)svg.replaceWith(im);}}catch(e){}})();
+    </script>
     <div class="search"><input id="q" type="text" placeholder="Tür, morph veya şehir ara..."></div>
     <div class="auth">
       <button class="btn btn-ghost msg-btn" id="msg-btn">✉<span class="dot" id="msg-dot"></span></button>
@@ -90,9 +106,13 @@
         </div>
       </div>
       <div class="hero-img">
-        <img src="hero.jpg" alt="Leopar gecko" style="width:100%;height:360px;object-fit:cover;border-radius:18px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-        <div style="width:100%;height:360px;background:var(--bg-3);display:none;align-items:center;justify-content:center;color:var(--muted);font-size:14px;border-radius:18px;">Görsel yakında</div>
+        <img class="hero-photo" alt="" style="width:100%;height:360px;object-fit:cover;border-radius:18px;display:none;">
+        <div class="hero-ph" style="width:100%;height:360px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;border-radius:18px;">Görsel yakında</div>
       </div>
+      <script>
+      /* Önbellekte hero görseli varsa anında göster */
+      (function(){try{var m=window.__smAssets||{};if(m.hero){var img=document.querySelector('.hero-img .hero-photo');if(img){img.src=m.hero;img.style.display='block';var ph=document.querySelector('.hero-img .hero-ph');if(ph)ph.style.display='none';}}}catch(e){}})();
+      </script>
     </div>
   </section>
 
