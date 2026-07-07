@@ -1,49 +1,129 @@
 /* ============================================================
-   Ölçek / oturuş iyileştirmeleri (MorphMarket ölçeği referans).
-   Tasarım, renk, yazı boyutları AYNI kalır — sadece genişlik ve
-   yerleşim oranları düzeltilir. styles.css'ten SONRA yüklenir.
+   Ölçek / oturuş + mobil uygulama optimizasyonu.
+   styles.css'ten SONRA yüklenir, onu geçersiz kılar.
    ============================================================ */
 
-/* 1) Üst bar ve menü baştan sona (tam genişlik) uzansın */
+/* --- Masaüstü yerleşim --- */
 header .topbar { max-width: none !important; padding-left: 44px !important; padding-right: 44px !important; }
 header nav ul  { max-width: none !important; padding-left: 44px !important; padding-right: 44px !important; }
-
-/* 2) İçerik alanı: geniş ekranda oturaklı, dengeli bir genişlik */
 .hero-inner, .section, .trust-inner, .foot-inner, .legal p, #detail {
-  max-width: 1600px !important;
-  padding-left: 44px !important;
-  padding-right: 44px !important;
+  max-width: 1600px !important; padding-left: 44px !important; padding-right: 44px !important;
 }
-
-/* 3) Kategori kartları temiz bir sıra halinde otursun (kare-benzeri) */
 .cats { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important; gap: 18px !important; }
 .cat .thumb { border-radius: 10px !important; }
 .cat .thumb img, .cat .thumb > div { height: 170px !important; }
-
-/* 4) İlan kartları da dengeli sığsın */
 .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important; gap: 18px !important; }
-
-/* 5) Hero oranı: metin solda, görsel/placeholder sağda dengeli */
 .hero-inner { gap: 48px !important; padding-top: 60px !important; padding-bottom: 60px !important; align-items: center !important; }
 .hero-img { width: 44% !important; max-width: 620px !important; }
 .hero-img img, .hero-img > div { height: 340px !important; }
-
-/* 6) YALNIZCA hero alanı düz siyah. Gerisi eski renginde kalır. */
 .hero { background: #000 !important; }
 
-/* 7) Logo: daire içinde beyaz gecko (gömülü SVG) + hover'da dil çıkar */
+/* Logo + hover dil */
 .logo-svg { flex-shrink: 0; transition: transform .2s ease; overflow: visible; }
 .logo:hover .logo-svg { transform: rotate(-5deg); }
-.logo-svg .tng {
-  transform-origin: 92px 57px; transform: scaleX(0); opacity: 0;
-  transition: transform .16s ease, opacity .12s ease;
-}
+.logo-svg .tng { transform-origin: 92px 57px; transform: scaleX(0); opacity: 0; transition: transform .16s ease, opacity .12s ease; }
 .logo:hover .logo-svg .tng { transform: scaleX(1); opacity: 1; }
 
-@media (max-width: 900px) {
-  header .topbar, header nav ul,
-  .hero-inner, .section, .trust-inner, .foot-inner, .legal p, #detail {
-    padding-left: 16px !important; padding-right: 16px !important;
-  }
+/* ============================================================
+   MOBİL ALT NAVİGASYON (uygulama hissi) — masaüstünde gizli
+   ============================================================ */
+#mnav { display: none; }
+#mnav button {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  background: none; border: none; color: var(--muted); font-size: 10.5px; font-weight: 600; cursor: pointer; padding: 7px 2px;
+}
+#mnav button span { font-size: 19px; line-height: 1; }
+#mnav button:active { transform: scale(.94); }
+#mnav .mnav-cta { color: #fff; }
+#mnav .mnav-cta span {
+  background: #fff; color: #0c0c0e; width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin-top: -18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.5); border: 3px solid var(--bg);
+}
+
+/* ============================================================
+   MOBİL (≤760px) — ilanlar mobil uygulama gibi
+   ============================================================ */
+@media (max-width: 760px) {
+  body { padding-bottom: 66px !important; }   /* alt nav için yer aç */
+
+  /* Üst bar sadeleşsin */
+  header .topbar { flex-wrap: wrap; padding: 10px 14px !important; gap: 10px; }
+  .logo { font-size: 18px !important; }
+  .search { order: 3; flex-basis: 100%; max-width: none !important; }
+  .search input { padding: 11px 14px 11px 40px; }
+  .auth { margin-left: auto; gap: 6px !important; }
+  .auth .btn { padding: 8px 12px; font-size: 13px; }
+  /* üst bardaki üye/giriş yerine alt nav var; kalabalığı azalt */
+  #auth-out, #btn-logout, #msg-btn { display: none !important; }
+  #btn-new { display: none !important; }       /* alt navdaki + kullanılacak */
+
+  /* Kategori menüsü yatay kayan çip şeridi */
+  header nav ul { padding: 0 12px !important; gap: 6px; }
+  header nav a { padding: 9px 12px; font-size: 13px; background: var(--bg-2); border-radius: 99px; margin: 8px 0; }
+  header nav a::after { display: none; }
+
+  /* Hero küçülsün */
+  .hero-inner { flex-direction: column; padding: 26px 16px !important; gap: 18px !important; }
+  .hero h1 { font-size: 30px !important; }
   .hero-img { width: 100% !important; }
+  .hero-img img, .hero-img > div { height: 200px !important; }
+
+  .section { padding: 26px 16px 6px !important; }
+  .section-head h2 { font-size: 21px !important; }
+  .trust-inner, .foot-inner, .legal p, #detail { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Kategoriler 3'lü */
+  .cats { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+  .cat .thumb img, .cat .thumb > div { height: 92px !important; }
+  .cat .name { font-size: 12px !important; }
+
+  /* Filtreler tek satır, yatay kaydırılır */
+  .filters { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters .chip, .filters select { flex: 0 0 auto; }
+
+  /* İLANLAR — 2 sütun, uygulama kartı gibi */
+  .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .card { border-radius: 16px !important; }
+  .card .photo { height: 150px !important; }
+  .card .body { padding: 10px 11px 12px !important; }
+  .card .title { font-size: 13.5px !important; }
+  .card .seller { font-size: 11px !important; }
+  .card .price { font-size: 15px !important; }
+  .card .foot { font-size: 10.5px !important; }
+  .card .badge { font-size: 10px !important; padding: 2px 8px !important; }
+
+  /* İlan detay tek sütun, foto tam genişlik */
+  .d-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .d-photo img, #d-main { height: 300px !important; }
+  .d-info { position: static !important; padding: 18px !important; }
+  .d-info h1 { font-size: 22px !important; }
+
+  /* Modallar tam ekran (uygulama sayfası gibi) */
+  .overlay { padding: 0 !important; align-items: stretch !important; }
+  .overlay .modal { max-width: none !important; width: 100% !important; min-height: 100vh; border-radius: 0 !important; padding: 20px 16px 90px !important; }
+  .form-grid { grid-template-columns: 1fr !important; }
+
+  /* Mesaj çekmecesi tam ekran */
+  .chat { width: 100% !important; right: -100% !important; }
+  .chat.open { right: 0 !important; }
+
+  /* Rehber / profil kartları */
+  .guide-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .profile-head { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+  .profile-stats { margin-left: 0 !important; }
+
+  /* Alt navigasyonu göster */
+  #mnav {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+    background: rgba(20,20,23,.96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border); padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Çok küçük ekran: kategoriler 3, ilanlar yine 2 */
+@media (max-width: 380px) {
+  .hero h1 { font-size: 26px !important; }
+  .cats { gap: 8px !important; }
 }

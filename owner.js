@@ -1,9 +1,8 @@
 // ============================================================================
 // owner.js  (kök seviyede ek modül)
-//   1) Site görselleri (önbellekli), 2) dinamik üst menü,
-//   3) "İlanlarım" düzenle/sil, 4) zorunlu SMS doğrulama,
-//   5) giriş sonrası hero "Hesap oluştur" gizleme,
-//   6) profil sayfasında takip sistemi (takipçi / takip / takip et)
+//   Site görselleri (önbellekli) · dinamik menü · İlanlarım · SMS doğrulama
+//   hero "Hesap oluştur" gizleme · takip sistemi · profil foto/banner
+//   mobil alt navigasyon (uygulama hissi)
 // ============================================================================
 import { supabase, publicImage } from "./js/supabase.js";
 
@@ -27,18 +26,18 @@ async function boot() {
   buildNav(categories);
   injectButton();
   setupProfileObserver();
+  injectMobileNav();
   supabase.auth.onAuthStateChange(async () => { await refresh(); injectButton(); });
 }
 async function refresh() {
   const { data:{ user } } = await supabase.auth.getUser();
   currentUid = user ? user.id : null;
   phoneVerified = !!(user && user.phone_confirmed_at);
-  // Giriş yapılınca hero'daki "Hesap oluştur" gizlensin
   const hr = document.getElementById("hero-register");
   if (hr) hr.style.display = currentUid ? "none" : "";
 }
 
-// ---- Üst menü (kategoriler) ----
+// ---- Üst menü ----
 function buildNav(cats) {
   const ul = document.getElementById("nav");
   if (!ul || !cats.length) return;
@@ -47,6 +46,29 @@ function buildNav(cats) {
     cats.map(c => `<li><a href="#" data-cat="${esc(c.slug)}">${esc(c.name)}</a></li>`).join("") +
     `<li><a href="#" data-page="rehberler">Bakım rehberleri</a></li>` +
     `<li><a href="#" data-page="hakkinda">Hakkında</a></li>`;
+}
+
+// ---- Mobil alt navigasyon ----
+function injectMobileNav() {
+  if (document.getElementById("mnav")) return;
+  const nav = document.createElement("nav");
+  nav.id = "mnav";
+  nav.innerHTML = `
+    <button data-m="home"><span>🏠</span>Ana sayfa</button>
+    <button data-m="guides"><span>📚</span>Rehber</button>
+    <button data-m="new" class="mnav-cta"><span>＋</span>İlan ver</button>
+    <button data-m="msg"><span>✉</span>Mesaj</button>
+    <button data-m="me"><span>👤</span>Hesabım</button>`;
+  document.body.appendChild(nav);
+  const clickEl = sel => { const el = document.querySelector(sel); if (el) el.click(); };
+  nav.querySelectorAll("button").forEach(b => b.onclick = () => {
+    const m = b.dataset.m;
+    if (m === "home") { const l = document.getElementById("logo"); if (l) l.click(); const il = document.getElementById("ilanlar"); if (il) il.scrollIntoView({ behavior:"smooth" }); }
+    else if (m === "guides") clickEl('[data-page="rehberler"]');
+    else if (m === "new") clickEl("#btn-new");
+    else if (m === "msg") clickEl("#msg-btn");
+    else if (m === "me") { if (currentUid) clickEl("#user-chip"); else clickEl("#btn-login"); }
+  });
 }
 
 // ---- Site görselleri (önbellekli) ----
@@ -100,7 +122,7 @@ function applyCats(map) {
   if (!cats._obs) { cats._obs = new MutationObserver(doIt); cats._obs.observe(cats, { childList: true }); }
 }
 
-// ---- Takip sistemi (profil sayfasında) ----
+// ---- Profil: takip + foto + banner ----
 function setupProfileObserver() {
   const page = document.getElementById("page");
   if (!page) return;
@@ -108,52 +130,96 @@ function setupProfileObserver() {
   new MutationObserver(check).observe(page, { childList: true, subtree: true });
   check();
 }
+function fileButton(label, onFile, extra) {
+  const wrap = document.createElement("label");
+  wrap.className = "btn btn-ghost";
+  wrap.style.cssText = "font-size:12px;padding:6px 11px;cursor:pointer;" + (extra || "");
+  wrap.textContent = label;
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.style.display = "none";
+  inp.onchange = e => { const f = e.target.files[0]; if (f) onFile(f); };
+  wrap.appendChild(inp);
+  return wrap;
+}
+async function uploadProfileImg(kind, file) {
+  toast("Yükleniyor…");
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${currentUid}/profile/${kind}-${Date.now()}.${ext}`;
+  const { error: up } = await supabase.storage.from("listing-images").upload(path, file, { upsert:true, cacheControl:"3600" });
+  if (up) { toast("Yüklenemedi: " + up.message); return null; }
+  const col = kind === "avatar" ? "avatar_url" : "banner_url";
+  const { error } = await supabase.from("profiles").update({ [col]: path }).eq("id", currentUid);
+  if (error) { toast("Kaydedilemedi: " + error.message); return null; }
+  return publicImage(path);
+}
 async function enhanceProfile(head) {
   head.dataset.follow = "1";
   const nameEl = head.querySelector(".pn");
   if (!nameEl) return;
   const username = nameEl.textContent.trim();
-  const { data: prof } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
+  const { data: prof } = await supabase.from("profiles").select("id,avatar_url,banner_url").eq("username", username).maybeSingle();
   if (!prof) return;
   const sellerId = prof.id;
+  const isMe = currentUid && currentUid === sellerId;
 
+  // Avatar
+  const av = head.querySelector(".avatar");
+  if (av && prof.avatar_url) {
+    const u = publicImage(prof.avatar_url);
+    av.style.backgroundImage = `url("${u}")`; av.style.backgroundSize = "cover"; av.style.backgroundPosition = "center"; av.textContent = "";
+  }
+  // Banner (varsa ya da kendi profilinse boş banner göster)
+  let bannerEl = null;
+  if (prof.banner_url || isMe) {
+    bannerEl = document.createElement("div");
+    bannerEl.style.cssText = "height:160px;border-radius:14px;margin-bottom:14px;background:var(--bg-3) center/cover no-repeat;";
+    if (prof.banner_url) bannerEl.style.backgroundImage = `url("${publicImage(prof.banner_url)}")`;
+    head.parentNode.insertBefore(bannerEl, head);
+  }
+
+  // Takip sayıları + buton
   const [followersRes, followingRes] = await Promise.all([
     supabase.from("follows").select("*", { count:"exact", head:true }).eq("seller_id", sellerId),
     supabase.from("follows").select("*", { count:"exact", head:true }).eq("follower_id", sellerId),
   ]);
   let isFollowing = false;
-  if (currentUid && currentUid !== sellerId) {
+  if (currentUid && !isMe) {
     const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", currentUid).eq("seller_id", sellerId).maybeSingle();
     isFollowing = !!f;
   }
-
   const target = head.querySelector(".profile-stats") || head;
   const wrap = document.createElement("div");
-  wrap.style.cssText = "display:flex;align-items:center;gap:22px;margin-left:4px;";
+  wrap.style.cssText = "display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-left:4px;";
   wrap.innerHTML =
     `<div style="text-align:center"><div id="pf-followers" style="font-size:19px;font-weight:800">${followersRes.count || 0}</div><div style="font-size:11.5px;color:var(--muted)">takipçi</div></div>
      <div style="text-align:center"><div style="font-size:19px;font-weight:800">${followingRes.count || 0}</div><div style="font-size:11.5px;color:var(--muted)">takip</div></div>
-     ${currentUid && currentUid !== sellerId ? `<button class="btn btn-ghost" id="pf-follow">${isFollowing ? "✓ Takip ediliyor" : "Takip et"}</button>` : ""}`;
+     ${currentUid && !isMe ? `<button class="btn btn-ghost" id="pf-follow">${isFollowing ? "✓ Takip ediliyor" : "Takip et"}</button>` : ""}`;
   target.appendChild(wrap);
-
   const btn = wrap.querySelector("#pf-follow");
   if (btn) btn.onclick = async () => {
     btn.disabled = true;
-    if (isFollowing) {
-      await supabase.from("follows").delete().eq("follower_id", currentUid).eq("seller_id", sellerId);
-      isFollowing = false;
-    } else {
-      await supabase.from("follows").insert({ follower_id: currentUid, seller_id: sellerId });
-      isFollowing = true;
-    }
-    btn.disabled = false;
-    btn.textContent = isFollowing ? "✓ Takip ediliyor" : "Takip et";
-    const c = wrap.querySelector("#pf-followers");
-    c.textContent = Math.max(0, (parseInt(c.textContent) || 0) + (isFollowing ? 1 : -1));
+    if (isFollowing) { await supabase.from("follows").delete().eq("follower_id", currentUid).eq("seller_id", sellerId); isFollowing = false; }
+    else { await supabase.from("follows").insert({ follower_id: currentUid, seller_id: sellerId }); isFollowing = true; }
+    btn.disabled = false; btn.textContent = isFollowing ? "✓ Takip ediliyor" : "Takip et";
+    const c = wrap.querySelector("#pf-followers"); c.textContent = Math.max(0, (parseInt(c.textContent) || 0) + (isFollowing ? 1 : -1));
   };
+
+  // Kendi profilin: foto + banner yükleme
+  if (isMe) {
+    const tools = document.createElement("div");
+    tools.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;width:100%;margin-top:6px;";
+    tools.appendChild(fileButton("📷 Profil fotoğrafı", async f => {
+      const u = await uploadProfileImg("avatar", f);
+      if (u && av) { av.style.backgroundImage = `url("${u}")`; av.style.backgroundSize = "cover"; av.style.backgroundPosition = "center"; av.textContent = ""; toast("Profil fotoğrafı güncellendi ✓"); }
+    }));
+    tools.appendChild(fileButton("🖼️ Banner", async f => {
+      const u = await uploadProfileImg("banner", f);
+      if (u && bannerEl) { bannerEl.style.backgroundImage = `url("${u}")`; toast("Banner güncellendi ✓"); }
+    }));
+    head.appendChild(tools);
+  }
 }
 
-// ---- "İlanlarım" + düzenle/sil ----
+// ---- "İlanlarım" ----
 function injectButton() {
   const holder = document.getElementById("auth-in");
   if (!holder) return;
